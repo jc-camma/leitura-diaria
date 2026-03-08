@@ -106,4 +106,15 @@ Smoke test da camada editorial (before/after):
 python -c "from app.lesson import load_books,get_entry_for_day; from app.config import runtime_paths; from app.main import refinement_smoke_test; p=runtime_paths(); entry=get_entry_for_day(load_books(p.data_file),1); refinement_smoke_test(entry, p.openai_api_key, p.openai_model)"
 ```
 
-Setup detalhado: [docs/SETUP.md](/c:/Users/Joao/Dev/Leitura%20di%C3%A1ria/docs/SETUP.md)
+Setup detalhado: [docs/SETUP.md](docs/SETUP.md)
+
+## Apoie o projeto
+
+Se este projeto te ajudou e voce quiser contribuir com um trocado:
+
+- GitHub Sponsors: https://github.com/sponsors/jc-camma
+- Botao "Sponsor" no repositorio (quando habilitado pelo GitHub)
+
+## Licenca
+
+Este projeto esta sob a licenca MIT. Veja [LICENSE](LICENSE).
