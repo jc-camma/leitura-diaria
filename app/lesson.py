@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -69,45 +70,85 @@ def get_entry_for_day(books: list[BookEntry], day: int) -> BookEntry:
     return books[day - 1]
 
 
+def generate_first_draft(entry: BookEntry) -> Lesson:
+    return _build_base_lesson(entry)
+
+
 def build_lesson(
     entry: BookEntry,
     openai_api_key: str | None = None,
-    openai_model: str = "gpt-4o-mini",
+    openai_model: str = "gpt-4.1-mini",
 ) -> Lesson:
-    base = _build_base_lesson(entry)
-    if not openai_api_key:
-        return base
-    refined = _try_refine_with_openai(base, openai_api_key, openai_model)
-    if refined is None:
-        return base
-    if refined.word_count() > 1600:
-        logger.warning("Refino da IA excedeu 1600 palavras; mantendo versão base.")
-        return base
-    return refined
+    from app.formatter import lesson_from_refinement_text, lesson_to_refinement_text, normalize_lesson_lists
+    from app.openai_refiner import refine_text_with_openai
+    from app.quality import evaluate_lesson_quality
+    from app.refiner import refine_lesson_local
+
+    draft = generate_first_draft(entry)
+    locally_refined = normalize_lesson_lists(refine_lesson_local(draft))
+
+    candidate = locally_refined
+    if openai_api_key:
+        previous_key = os.getenv("OPENAI_API_KEY")
+        previous_model = os.getenv("OPENAI_MODEL")
+        try:
+            os.environ["OPENAI_API_KEY"] = openai_api_key
+            os.environ["OPENAI_MODEL"] = openai_model
+            serialized = lesson_to_refinement_text(locally_refined)
+            ai_refined_text = refine_text_with_openai(serialized)
+            parsed = lesson_from_refinement_text(locally_refined, ai_refined_text)
+            if parsed is None:
+                logger.warning("Refino OpenAI retornou estrutura invalida; mantendo versao local.")
+            else:
+                candidate = normalize_lesson_lists(parsed)
+        finally:
+            if previous_key is None:
+                os.environ.pop("OPENAI_API_KEY", None)
+            else:
+                os.environ["OPENAI_API_KEY"] = previous_key
+            if previous_model is None:
+                os.environ.pop("OPENAI_MODEL", None)
+            else:
+                os.environ["OPENAI_MODEL"] = previous_model
+
+    report = evaluate_lesson_quality(candidate)
+    _log_quality_issues(report.issues)
+    if report.has_blocking_errors:
+        logger.warning("Qualidade bloqueante detectada; usando versao local refinada.")
+        candidate = locally_refined
+
+    min_words = min(900, locally_refined.word_count())
+    if candidate.word_count() < min_words:
+        logger.warning(
+            "Refino final ficou curto demais (%s palavras); mantendo versao local.",
+            candidate.word_count(),
+        )
+        return locally_refined
+
+    if candidate.word_count() > 1600:
+        logger.warning("Refino final excedeu 1600 palavras; mantendo versao local.")
+        return locally_refined
+    return candidate
 
 
 def _build_base_lesson(entry: BookEntry) -> Lesson:
-    ideas = _ensure_length(entry.key_ideas, 5, "Conceito essencial")
-    applications = _ensure_length(
-        entry.practical_applications, 3, "Aplicação prática recomendada"
-    )
-    concepts = [f"{idx}. {idea}" for idx, idea in enumerate(ideas[:5], start=1)]
+    ideas = _ensure_length(entry.key_ideas, 1, "Conceito essencial")
+    applications = _ensure_length(entry.practical_applications, 3, "Aplicacao pratica recomendada")
+    concepts = [f"{idx}. {idea}" for idx, idea in enumerate(ideas, start=1)]
     practical = [f"{idx}. {app}" for idx, app in enumerate(applications[:3], start=1)]
-    guided_reading = _build_guided_reading(entry, ideas, applications)
+    guided_reading = _build_guided_reading(entry, ideas)
     summary = [
-        f"Foco do dia: {entry.theme}.",
-        f"Conceito-chave: {ideas[0]}.",
-        f"Ação imediata: {applications[0]}.",
+        f"Tese central: {entry.theme}.",
+        f"Eixo conceitual dominante: {ideas[0]}.",
+        "Sintese critica: progresso consistente supera mudancas bruscas.",
     ]
     central = (
-        f"A leitura de hoje conecta o livro \"{entry.title}\" ao tema \"{entry.theme}\" "
-        "com foco em decisões de gestão aplicáveis na rotina profissional. A ideia central "
-        "é transformar princípios em comportamento observável: em vez de consumir teoria de "
-        "forma passiva, você vai identificar sinais práticos, comparar alternativas e escolher "
-        "um pequeno experimento para a semana. Esse formato acelera aprendizado porque cria "
-        "repetição deliberada: você lê, interpreta, testa e revisa. Ao final, o objetivo não "
-        "é apenas concordar com o autor, mas converter o conteúdo em clareza de prioridades, "
-        "melhor comunicação com o time e disciplina para executar o que realmente gera resultado."
+        f"\"{entry.title}\", de {entry.author}, aborda \"{entry.theme}\" de forma direta: "
+        "resultados grandes surgem da repeticao de pequenas decisoes corretas. Em vez de depender "
+        "de motivacao intensa ou de mudancas radicais, o livro mostra um caminho de melhoria "
+        "incremental, com foco em sistema, constancia e ajuste continuo. A leitura conecta ideia, "
+        "mecanismo e aplicacao pratica, ajudando o leitor a transformar principio abstrato em rotina "
+        "observavel no dia a dia."
     )
 
     lesson = Lesson(
@@ -127,36 +168,107 @@ def _build_base_lesson(entry: BookEntry) -> Lesson:
     return _ensure_target_word_count(lesson)
 
 
-def _build_guided_reading(
-    entry: BookEntry,
-    ideas: list[str],
-    applications: list[str],
-) -> list[str]:
+def _build_guided_reading(entry: BookEntry, ideas: list[str]) -> list[str]:
     paragraphs: list[str] = []
     paragraphs.append(
-        f"No contexto de \"{entry.title}\", {entry.author} mostra que resultados sustentáveis "
-        f"dependem de coerência entre intenção e método. O tema \"{entry.theme}\" não deve ser "
-        "tratado como slogan, mas como um sistema de escolhas diárias: o que priorizar, o que "
-        "eliminar e como medir evolução. Em ambientes acelerados, essa clareza evita decisões "
-        "reativas e protege o time de dispersão."
+        f"Conceitos centrais de \"{entry.title}\": o livro parte de \"{entry.theme}\" para mostrar "
+        "que o resultado final e consequencia do processo repetido. A leitura fica mais util quando "
+        "cada conceito e tratado com quatro perguntas: o que significa, por que funciona, como aparece "
+        "na pratica e qual passo concreto voce pode testar hoje."
     )
-    for idx, idea in enumerate(ideas[:5], start=1):
-        app = applications[(idx - 1) % len(applications)]
-        paragraphs.append(
-            f"O conceito {idx}, \"{idea}\", ganha força quando ligado ao trabalho real. Observe "
-            "uma atividade recorrente da sua rotina e faça um diagnóstico simples: objetivo, "
-            "restrição, risco e métrica de qualidade. Em seguida, compare com a aplicação "
-            f"\"{app}\" e adapte para o seu contexto. Essa tradução da teoria para prática "
-            "é o ponto que transforma leitura em competência, porque obriga priorização, "
-            "comunicação clara e revisão de execução."
-        )
+    anchors = _ensure_length(entry.practical_applications, 3, "Aplicacao pratica recomendada")
+    for idx, idea in enumerate(ideas, start=1):
+        anchor = anchors[(idx - 1) % len(anchors)]
+        paragraphs.append(_build_concept_explainer(entry.title, idea, idx, anchor))
     paragraphs.append(
-        "Feche a lição registrando um compromisso de baixa complexidade e alto impacto para as "
-        "próximas 24 horas. O progresso diário vem da combinação entre foco, repetição e feedback. "
-        "Se você mantiver esse ciclo por semanas, os conceitos deixam de ser inspiração pontual "
-        "e se tornam padrão de performance."
+        "Resumo em uma frase: desempenho consistente raramente nasce de uma decisao heroica; ele surge "
+        "da soma de pequenas melhorias praticadas por tempo suficiente para gerar efeito composto."
     )
     return paragraphs
+
+
+def _build_concept_explainer(title: str, idea: str, idx: int, anchor: str) -> str:
+    clean_idea = idea.strip().rstrip(".")
+    lowered = clean_idea.lower()
+
+    if idx == 1 and _looks_like_compound_growth_idea(lowered):
+        return (
+            f"Conceito {idx} de {title}: {clean_idea}. Esse conceito e um dos pilares da obra. "
+            "A logica e simples: pequenas melhorias diarias se acumulam e criam um salto de resultado "
+            "ao longo do tempo, de forma parecida com juros compostos. Exemplo numerico classico: "
+            "1.01^365 ~= 37, enquanto 0.99^365 ~= 0.03. Em outras palavras, pequenas escolhas positivas "
+            "repetidas elevam desempenho, e pequenas escolhas negativas repetidas corroem progresso. "
+            f"Passo pratico de hoje: {anchor}"
+        )
+
+    openings = [
+        f"Conceito {idx} de {title}",
+        f"Seguindo o raciocinio do livro, o conceito {idx}",
+        f"Ja no conceito {idx}",
+        f"No conceito {idx}",
+        f"Por fim, no conceito {idx}",
+    ]
+    opening = openings[(idx - 1) % len(openings)]
+    mechanism = _concept_mechanism_hint(lowered)
+    example = _concept_example_hint(lowered)
+
+    return (
+        f"{opening}: {clean_idea}. Em linguagem direta, {mechanism} "
+        f"Exemplo pratico: {example} Passo pratico de hoje: {anchor}"
+    )
+
+
+def _looks_like_compound_growth_idea(idea: str) -> bool:
+    triggers = ["melhoria", "crescimento composto", "acumul", "1%", "composto"]
+    return any(token in idea for token in triggers)
+
+
+def _concept_mechanism_hint(idea: str) -> str:
+    if "ambiente" in idea:
+        return (
+            "o ambiente reduz ou aumenta atrito para o comportamento. Quando a acao desejada fica "
+            "visivel, simples e acessivel, a execucao depende menos de motivacao momentanea."
+        )
+    if "identidade" in idea:
+        return (
+            "o comportamento tende a se manter quando reforca a identidade que a pessoa quer construir. "
+            "A pergunta deixa de ser 'o que eu quero atingir' e vira 'quem eu quero me tornar'."
+        )
+    if "sistema" in idea or "meta" in idea:
+        return (
+            "metas apontam direcao, mas sistema define repeticao. Sem rotina clara, o objetivo vira "
+            "intencao; com rotina, vira progresso mensuravel."
+        )
+    if "rastreamento" in idea or "visual" in idea:
+        return (
+            "feedback visual imediato aumenta consistencia, porque torna a execucao observavel e ajuda "
+            "a interromper quedas antes que virem padrao."
+        )
+    return (
+        "o principio transforma uma ideia ampla em comportamento repetivel. A forca do conceito aparece "
+        "quando ele e aplicado em ciclos curtos de teste, medicao e ajuste."
+    )
+
+
+def _concept_example_hint(idea: str) -> str:
+    if "ambiente" in idea:
+        return (
+            "deixar livro na mesa e celular fora do alcance na hora de estudar aumenta a chance de leitura "
+            "sem exigir disciplina heroica."
+        )
+    if "identidade" in idea:
+        return (
+            "quem quer ser 'uma pessoa saudavel' pode manter um treino curto diario, mesmo em dias corridos, "
+            "para reforcar esse auto-conceito."
+        )
+    if "sistema" in idea or "meta" in idea:
+        return (
+            "em vez de focar em 'escrever um livro', definir 300 palavras por dia cria progresso estavel e "
+            "acumulativo."
+        )
+    if "rastreamento" in idea or "visual" in idea:
+        return "marcar um calendario apos cada execucao do habito ajuda a manter sequencia e detectar recaidas."
+    return "reservar 15 minutos diarios para a mesma atividade gera acumulacao visivel apos algumas semanas."
 
 
 def _ensure_length(items: list[str], minimum: int, prefix: str) -> list[str]:
@@ -169,28 +281,30 @@ def _ensure_length(items: list[str], minimum: int, prefix: str) -> list[str]:
 def _ensure_target_word_count(lesson: Lesson) -> Lesson:
     additions = [
         (
-            "Amplie a utilidade desta lição definindo uma métrica de processo e uma métrica de "
-            "resultado para os próximos sete dias. A métrica de processo acompanha execução "
-            "diária, enquanto a de resultado mostra efeito acumulado. Ao separar os dois níveis, "
-            "você evita frustração por esperar impacto imediato e ganha visibilidade sobre a "
-            "qualidade da rotina. Se o processo não acontece, o resultado raramente aparece; se "
-            "o processo acontece sem qualidade, o resultado aparece tarde e com custo alto."
+            "Aplicacao em 7 dias: escolha um habito de ate 10 minutos e execute no mesmo horario durante "
+            "uma semana. No fim do periodo, registre tres pontos: o que ficou facil, onde houve atrito e "
+            "qual ajuste reduz a chance de falha na semana seguinte. No dia 1, foque apenas em iniciar no "
+            "horario combinado. Do dia 2 ao dia 4, mantenha o mesmo gatilho para reduzir decisao. Do dia 5 "
+            "ao dia 7, acompanhe continuidade e descreva em uma frase o que ajudou ou atrapalhou a execucao."
         ),
         (
-            "Também é útil compartilhar a aprendizagem com outra pessoa do time. Ao explicar o "
-            "conceito com suas próprias palavras, você revela lacunas de entendimento e transforma "
-            "conteúdo passivo em repertório de decisão. Uma conversa curta, orientada por exemplos "
-            "reais da semana, costuma acelerar retenção e criar compromisso mútuo. Esse mecanismo "
-            "social aumenta a chance de continuidade e reduz o risco de a leitura virar apenas um "
-            "insight isolado sem aplicação concreta."
+            "Erros comuns ao aplicar os conceitos: tentar mudar tudo de uma vez, depender apenas de motivacao, "
+            "nao medir execucao e abandonar o processo apos poucos dias sem resultado visivel. O livro reforca "
+            "que consistencia e mais importante que intensidade pontual. Outro erro frequente e definir meta "
+            "ambiciosa sem desenhar o contexto de execucao: sem horario, local e gatilho claros, a rotina vira "
+            "boa intencao. Correcao pratica: reduzir escopo, manter frequencia e revisar o sistema semanalmente."
         ),
         (
-            "Finalize revisitando a pergunta de reflexão e transformando a resposta em um plano "
-            "enxuto: o que começar, o que parar e o que manter. Esse fechamento ajuda a reduzir "
-            "ambiguidade e converte intenção em ação observável. Em ciclos curtos, os ganhos vêm "
-            "da clareza repetida: menos decisões ad hoc, mais critério, mais consistência e melhor "
-            "uso do tempo. O objetivo da leitura diária é justamente esse: melhorar a execução "
-            "real sem depender de motivação extraordinária."
+            "Checklist de consolidacao: manter o gatilho do habito visivel, reduzir friccao para iniciar, "
+            "registrar a execucao diariamente e revisar o sistema uma vez por semana. Essa rotina simples "
+            "costuma gerar melhoria sustentavel sem exigir mudancas radicais. Para manter aderencia, escolha "
+            "um indicador simples de processo (dias executados, minutos dedicados ou repeticoes concluidas) "
+            "e um indicador de resultado (qualidade percebida, velocidade ou estabilidade)."
+        ),
+        (
+            "Modelo de revisao semanal: o que funcionou, o que travou e qual unico ajuste entra na proxima "
+            "semana. Esse fechamento evita acumulacao de tentativas desconectadas e cria aprendizado pratico. "
+            "Com revisoes curtas e constantes, o sistema evolui sem ruptura e sem depender de motivacao alta."
         ),
     ]
     updated = lesson
@@ -212,82 +326,12 @@ def _ensure_target_word_count(lesson: Lesson) -> Lesson:
     return updated
 
 
-def _try_refine_with_openai(
-    base: Lesson,
-    api_key: str,
-    model: str,
-) -> Lesson | None:
-    try:
-        from openai import OpenAI
-    except Exception as exc:
-        logger.warning("OpenAI SDK indisponível, mantendo texto base. Erro: %s", exc)
-        return None
-
-    prompt_payload = {
-        "day": base.day,
-        "title": base.title,
-        "author": base.author,
-        "theme": base.theme,
-        "central_idea": base.central_idea,
-        "concepts": base.concepts,
-        "practical_applications": base.practical_applications,
-        "reflection_question": base.reflection_question,
-        "guided_reading": base.guided_reading,
-        "summary_bullets": base.summary_bullets,
-        "optional_quote": base.optional_quote,
-    }
-
-    instruction = (
-        "Você é um editor em português do Brasil. Reescreva a lição para soar mais fluida e "
-        "prática, mantendo o mesmo conteúdo e estrutura. Regras: manter exatamente 5 conceitos, "
-        "3 aplicações e 3 bullets de resumo; manter 1 pergunta de reflexão; citação opcional com "
-        "até 2 linhas; tamanho alvo entre 900 e 1400 palavras e nunca acima de 1600. "
-        "Responda somente em JSON com as mesmas chaves de entrada."
-    )
-
-    try:
-        client = OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model=model,
-            temperature=0.5,
-            messages=[
-                {"role": "system", "content": instruction},
-                {"role": "user", "content": json.dumps(prompt_payload, ensure_ascii=False)},
-            ],
-        )
-        content = response.choices[0].message.content or ""
-        parsed = json.loads(_extract_json(content))
-        lesson = Lesson(
-            day=int(parsed["day"]),
-            title=str(parsed["title"]),
-            author=str(parsed["author"]),
-            theme=str(parsed["theme"]),
-            central_idea=str(parsed["central_idea"]),
-            concepts=[str(item) for item in parsed["concepts"]][:5],
-            practical_applications=[str(item) for item in parsed["practical_applications"]][:3],
-            reflection_question=str(parsed["reflection_question"]),
-            guided_reading=[str(item) for item in parsed["guided_reading"]],
-            summary_bullets=[str(item) for item in parsed["summary_bullets"]][:3],
-            optional_quote=str(parsed["optional_quote"]).strip()
-            if parsed.get("optional_quote")
-            else None,
-        )
-    except Exception as exc:
-        logger.warning("Falha ao refinar com OpenAI, mantendo texto base. Erro: %s", exc)
-        return None
-
-    if lesson.word_count() < 900:
-        logger.warning("Refino da IA ficou curto demais (%s palavras), mantendo base.", lesson.word_count())
-        return None
-    return lesson
-
-
-def _extract_json(content: str) -> str:
-    content = content.strip()
-    if content.startswith("{") and content.endswith("}"):
-        return content
-    start = content.find("{")
-    end = content.rfind("}")
-    if start == -1 or end == -1 or end <= start:
-        raise ValueError("Resposta da IA sem JSON válido.")
-    return content[start : end + 1]
+def _log_quality_issues(issues: list[object]) -> None:
+    for issue in issues:
+        severity = getattr(issue, "severity", "warning")
+        message = getattr(issue, "message", str(issue))
+        code = getattr(issue, "code", "quality_issue")
+        if severity == "error":
+            logger.error("Quality [%s]: %s", code, message)
+        else:
+            logger.warning("Quality [%s]: %s", code, message)

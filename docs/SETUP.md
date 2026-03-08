@@ -37,7 +37,8 @@ SMTP_PASS=sua_senha_ou_app_password
 EMAIL_FROM=seu_email@dominio.com
 EMAIL_TO=destinatario@dominio.com
 OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-4.1-mini
+YOUTUBE_API_KEY=
 ```
 
 ## 4) Execução manual

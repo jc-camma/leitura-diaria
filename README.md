@@ -1,42 +1,88 @@
-# MBA 15min - Leitura diária com PDF + e-mail
+# MBA 15min - leitura diaria com PDF e e-mail
 
-Projeto em Python 3.11+ que gera uma lição diária (Dia 1..365), cria um PDF A4 e envia por e-mail via SMTP com TLS.
+Projeto em Python 3.11+ para gerar uma leitura diaria (Dia 1..365), refinar editorialmente o texto em duas passagens (local + OpenAI), validar qualidade, exportar PDF e enviar por SMTP.
 
-## Recursos
+## Setup rapido (venv)
 
-- 365 leituras em `data/books_365.json` (dias 1..20 preenchidos; 21..365 placeholders editáveis).
-- Geração de lição em português com formato prático de 10-15 minutos.
-- Refino opcional com OpenAI quando `OPENAI_API_KEY` estiver configurada.
-- Persistência local em JSON (`data/state.json`) sem banco de dados.
-- Idempotência diária: não reenvia no mesmo dia sem `--force`.
-- CLI para envio, preview e dia específico de teste.
-- Compatível com Windows e Linux.
+### Linux/macOS
 
-## Estrutura
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### Windows (PowerShell)
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Configuracao (.env)
+
+Use `.env.example` como base:
+
+```env
+SMTP_HOST=smtp.seuprovedor.com
+SMTP_PORT=587
+SMTP_USER=seu_usuario_smtp
+SMTP_PASS=sua_senha_ou_app_password
+EMAIL_FROM=seu_email@dominio.com
+EMAIL_TO=destinatario@dominio.com
+
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+
+YOUTUBE_API_KEY=
+```
+
+## Pipeline
+
+Ordem do pipeline:
+
+1. `reading_plan.py` seleciona o livro do dia
+2. `generator.py` gera rascunho
+3. `refiner.py` aplica refino local anti-repeticao
+4. `openai_refiner.py` aplica refino editorial OpenAI
+5. `quality.py` valida heuristicas de qualidade
+6. `formatter.py` preserva estrutura/secoes
+7. `pdf_exporter.py` gera PDF
+8. `mailer.py` envia e-mail
+
+## Estrutura principal
 
 ```text
 app/
-  __init__.py
+  main.py
   run.py
+  reading_plan.py
+  generator.py
   lesson.py
+  refiner.py
+  openai_refiner.py
+  quality.py
+  formatter.py
+  pdf_exporter.py
+  mailer.py
+  config.py
+  utils.py
+  youtube.py
   pdf_gen.py
   emailer.py
   state.py
-  config.py
 data/
   books_365.json
-  state.json (gerado automaticamente)
 docs/
   SETUP.md
 tests/
-  test_json_loading.py
-  test_state_idempotency.py
-  test_pdf_filename.py
-  test_emailer_mock.py
-out/ (gerado)
+out/
 ```
 
-## CLI
+## Uso CLI
 
 ```bash
 python -m app.run --preview
@@ -46,15 +92,7 @@ python -m app.run --preview --day 12
 python -m app.run --send-now --day 12
 ```
 
-`--day N` gera/envia um dia específico sem alterar o progresso salvo no `state.json`.
-
-## Completar placeholders (dias 21..365)
-
-```bash
-python -m app.content_tools --list-placeholders
-python -m app.content_tools --export-template 21 > dia21.json
-python -m app.content_tools --apply-file dia21.json
-```
+`--day N` gera/envia um dia especifico sem alterar o progresso salvo no `state.json`.
 
 ## Testes
 
@@ -62,6 +100,10 @@ python -m app.content_tools --apply-file dia21.json
 pytest
 ```
 
-## Setup completo
+Smoke test da camada editorial (before/after):
 
-Veja [docs/SETUP.md](/c:/Users/Joao/Dev/Leitura%20diária/docs/SETUP.md).
+```bash
+python -c "from app.lesson import load_books,get_entry_for_day; from app.config import runtime_paths; from app.main import refinement_smoke_test; p=runtime_paths(); entry=get_entry_for_day(load_books(p.data_file),1); refinement_smoke_test(entry, p.openai_api_key, p.openai_model)"
+```
+
+Setup detalhado: [docs/SETUP.md](/c:/Users/Joao/Dev/Leitura%20di%C3%A1ria/docs/SETUP.md)

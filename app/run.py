@@ -6,10 +6,12 @@ import sys
 from datetime import date
 
 from app.config import ConfigError, load_env_only, load_smtp_config, runtime_paths
-from app.emailer import EmailSendError, send_lesson_email
-from app.lesson import build_lesson, get_entry_for_day, load_books
-from app.pdf_gen import generate_lesson_pdf
+from app.main import build_refined_lesson
+from app.mailer import EmailSendError, deliver_lesson_email
+from app.pdf_exporter import export_pdf
+from app.reading_plan import select_daily_entry
 from app.state import ReadingPlanCompletedError, StateStore
+from app.youtube import find_most_relevant_video
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +44,6 @@ def run() -> int:
     paths = runtime_paths()
     load_env_only()
 
-    books = load_books(paths.data_file)
     store = StateStore(paths.state_file)
     current_state = store.load()
     today = date.today()
@@ -53,21 +54,32 @@ def run() -> int:
         logger.info("Licao de hoje ja foi enviada; use --force para reenviar.")
         return 0
 
-    entry = get_entry_for_day(books, day_to_send)
-    lesson = build_lesson(
-        entry,
-        openai_api_key=paths.openai_api_key,
-        openai_model=paths.openai_model,
+    entry = select_daily_entry(paths.data_file, day_to_send)
+    lesson = build_refined_lesson(entry, openai_api_key=paths.openai_api_key, openai_model=paths.openai_model)
+    youtube_ref = find_most_relevant_video(lesson, youtube_api_key=paths.youtube_api_key)
+    pdf_path = export_pdf(
+        lesson,
+        paths.out_dir,
+        today,
+        youtube_video_url=youtube_ref.url,
+        youtube_video_title=youtube_ref.title,
     )
-    pdf_path = generate_lesson_pdf(lesson, paths.out_dir, today)
     logger.info("PDF gerado: %s (palavras aproximadas: %s)", pdf_path, lesson.word_count())
+    logger.info("Link YouTube (%s): %s", youtube_ref.source, youtube_ref.url)
 
     if args.preview:
         logger.info("Modo preview ativo: nenhum e-mail enviado.")
         return 0
 
     smtp_config = load_smtp_config()
-    send_lesson_email(smtp_config, lesson, pdf_path, today)
+    deliver_lesson_email(
+        smtp_config,
+        lesson,
+        pdf_path,
+        today,
+        youtube_video_url=youtube_ref.url,
+        youtube_video_title=youtube_ref.title,
+    )
     logger.info("E-mail enviado para %s", smtp_config.email_to)
 
     if manual_day:

@@ -15,18 +15,34 @@ class EmailSendError(RuntimeError):
 
 
 def build_email_subject(lesson: Lesson) -> str:
-    return f"MBA 15min – Dia {lesson.day}: {lesson.title}"
+    return f"MBA 15min - Dia {lesson.day}: {lesson.title}"
 
 
-def build_email_body(lesson: Lesson, generation_date: date) -> str:
-    bullets = "\n".join([f"- {item}" for item in lesson.summary_bullets[:3]])
+def build_email_body(
+    lesson: Lesson,
+    generation_date: date,
+    youtube_video_url: str | None = None,
+    youtube_video_title: str | None = None,
+) -> str:
+    concepts = "\n".join([f"- {concept}" for concept in lesson.concepts])
+    video_block = ""
+    if youtube_video_url:
+        video_label = youtube_video_title or "Video recomendado no YouTube"
+        video_block = f"\n\nVideo recomendado:\n{video_label}\n{youtube_video_url}"
+
     return (
-        f"Bom dia,\n\n"
-        f"Segue a sua leitura de hoje (Dia {lesson.day}) em PDF.\n"
+        "Bom dia,\n\n"
+        f"Segue a leitura do Dia {lesson.day} em anexo (PDF).\n"
         f"Tema: {lesson.theme}\n"
-        f"Data de geração: {generation_date.isoformat()}\n\n"
-        f"Resumo rápido:\n{bullets}\n\n"
-        "Tempo estimado de leitura: 10 a 15 minutos.\n\n"
+        f"Data de geracao: {generation_date.isoformat()}\n\n"
+        "Formato desta edicao:\n"
+        "- Resumo analitico do livro\n"
+        "- Principais conceitos\n"
+        "- Link de video complementar\n\n"
+        "Principais conceitos do dia:\n"
+        f"{concepts}"
+        f"{video_block}\n\n"
+        "Leitura estimada: 10 a 15 minutos.\n\n"
         "Bons estudos,\n"
         "MBA 15min"
     )
@@ -37,12 +53,21 @@ def send_lesson_email(
     lesson: Lesson,
     pdf_path: Path,
     generation_date: date,
+    youtube_video_url: str | None = None,
+    youtube_video_title: str | None = None,
 ) -> None:
     message = EmailMessage()
     message["Subject"] = build_email_subject(lesson)
     message["From"] = smtp_config.email_from
     message["To"] = smtp_config.email_to
-    message.set_content(build_email_body(lesson, generation_date))
+    message.set_content(
+        build_email_body(
+            lesson,
+            generation_date,
+            youtube_video_url=youtube_video_url,
+            youtube_video_title=youtube_video_title,
+        )
+    )
 
     with pdf_path.open("rb") as fh:
         pdf_bytes = fh.read()
@@ -61,4 +86,3 @@ def send_lesson_email(
             server.send_message(message)
     except Exception as exc:
         raise EmailSendError(f"Falha no envio SMTP: {exc}") from exc
-
