@@ -84,7 +84,8 @@ A principal licao e que progresso sustentavel vem de repeticao consistente, nao 
     assert len(lesson.concepts) >= 5
     assert lesson.concepts[0].startswith("1. Crescimento composto")
     assert len(lesson.practical_applications) >= 3
-    assert any(item.startswith("2. Por que este livro importa") for item in lesson.guided_reading)
+    assert any("A obra ganhou relevancia" in item for item in lesson.guided_reading)
+    assert not any(item.startswith("2. Por que este livro importa") for item in lesson.guided_reading)
 
 
 def test_ai_summary_parser_keeps_full_section_6_content() -> None:

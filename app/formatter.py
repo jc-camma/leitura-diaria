@@ -4,7 +4,7 @@ import re
 from dataclasses import replace
 
 from app.lesson import Lesson
-from app.utils import extract_numbered_content, normalize_whitespace
+from app.utils import extract_numbered_content, normalize_whitespace, strip_concept_prefix
 
 
 SECTION_ORDER: list[tuple[int, str]] = [
@@ -134,6 +134,8 @@ def _fallback(value: str | None, default: str) -> str:
 def _parse_numbered_items(section_text: str, expected: int | None, prefix: str) -> list[str]:
     lines = [line.strip() for line in section_text.splitlines() if line.strip()]
     cleaned = [extract_numbered_content(line) for line in lines]
+    if prefix.lower().startswith("conceito"):
+        cleaned = [strip_concept_prefix(item) for item in cleaned]
     cleaned = [line for line in cleaned if line]
     if expected is not None:
         while len(cleaned) < expected:
@@ -144,6 +146,8 @@ def _parse_numbered_items(section_text: str, expected: int | None, prefix: str) 
 
 def _normalize_numbered_items(items: list[str], expected: int | None, prefix: str) -> list[str]:
     values = [extract_numbered_content(item) for item in items if item.strip()]
+    if prefix.lower().startswith("conceito"):
+        values = [strip_concept_prefix(item) for item in values]
     if expected is not None:
         while len(values) < expected:
             values.append(f"{prefix} {len(values) + 1}")

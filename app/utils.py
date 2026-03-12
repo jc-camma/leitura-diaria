@@ -31,3 +31,16 @@ def normalize_for_similarity(text: str) -> str:
 
 def extract_numbered_content(text: str) -> str:
     return re.sub(r"^\s*\d+\s*[\.\)\-:]*\s*", "", text).strip()
+
+
+def strip_concept_prefix(text: str) -> str:
+    cleaned = normalize_whitespace(text)
+    if not cleaned:
+        return ""
+    cleaned = re.sub(r"^\s*(?:[-•*]\s*)+", "", cleaned)
+    cleaned = re.sub(
+        r"(?i)^\s*conceito(?:s)?(?:\s*\d+)?\s*[:\\-–—]\s*",
+        "",
+        cleaned,
+    )
+    return cleaned.strip()

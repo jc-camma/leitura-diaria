@@ -11,7 +11,7 @@ from app.lesson import BookEntry, Lesson
 from app.openai_refiner import generate_book_summary_with_openai
 from app.quality import evaluate_lesson_quality
 from app.refiner import refine_lesson_local
-from app.utils import extract_numbered_content, normalize_whitespace
+from app.utils import extract_numbered_content, normalize_whitespace, strip_concept_prefix
 from app.youtube import find_most_relevant_video
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ def _lesson_from_ai_summary_text(entry: BookEntry, text: str) -> Lesson | None:
     for sec in [2]:
         body = normalize_whitespace(sections.get(sec, ""))
         if body:
-            guided.append(f"{sec}. {_SECTION_NAMES[sec]}\n{body}")
+            guided.append(_strip_leading_quoted_title(body, entry.title))
 
     section3_guided = _format_concepts_guided_section(section3_text, concept_blocks, concept_names)
     guided.extend(section3_guided)
@@ -225,8 +225,10 @@ def _extract_concept_names(
             continue
         if lowered.startswith("conceitos fundamentais"):
             continue
-        cleaned = _clean_inline_markup(
-            re.sub(r"^\s*conceito\s*\d*\s*[:-]\s*", "", line, flags=re.IGNORECASE).strip()
+        cleaned = strip_concept_prefix(
+            _clean_inline_markup(
+                re.sub(r"^\s*(?:[-*•]\s*)+", "", line).strip()
+            )
         )
         if cleaned and cleaned.lower() not in seen_lower and len(cleaned.split()) <= 14:
             names.append(cleaned)
@@ -299,7 +301,7 @@ def _format_concepts_guided_section(
     if concept_blocks:
         for idx, (name, explanation, example) in enumerate(concept_blocks):
             label = _alpha_label(idx)
-            line = f"{label}. {name}"
+            line = f"{label}. {strip_concept_prefix(name)}"
             if explanation:
                 line += f": {explanation}"
             if example:
@@ -307,7 +309,7 @@ def _format_concepts_guided_section(
             lines.append(normalize_whitespace(line))
     else:
         for idx, name in enumerate(concept_names):
-            lines.append(f"{_alpha_label(idx)}. {_clean_inline_markup(name)}")
+            lines.append(f"{_alpha_label(idx)}. {strip_concept_prefix(_clean_inline_markup(name))}")
 
     if not lines:
         fallback_body = _clean_inline_markup(normalize_whitespace(section_text))
@@ -339,6 +341,7 @@ def _extract_section_intro(section_text: str) -> str:
         if re.match(r"^\s*(?:\d+[.)]|[-*])\s+", line):
             continue
         lowered = line.lower()
+        lowered = re.sub(r"^\s*(?:[-*•]\s*)+", "", lowered)
         if lowered.startswith("conceito:"):
             continue
         if lowered.startswith("explicacao:") or lowered.startswith("explicação:"):
@@ -349,6 +352,26 @@ def _extract_section_intro(section_text: str) -> str:
             continue
         intro_lines.append(_clean_inline_markup(line))
     return normalize_whitespace(" ".join(intro_lines))
+
+
+def _strip_leading_quoted_title(text: str, title: str) -> str:
+    cleaned = normalize_whitespace(text)
+    if not cleaned:
+        return ""
+    title_clean = normalize_whitespace(title)
+    if not title_clean:
+        return cleaned
+
+    variants = [
+        f"\"{title_clean}\"",
+        f"“{title_clean}”",
+        f"'{title_clean}'",
+        f"‘{title_clean}’",
+    ]
+    for quoted in variants:
+        if cleaned.startswith(quoted):
+            return (title_clean + cleaned[len(quoted) :]).lstrip()
+    return cleaned
 
 
 def _clean_inline_markup(text: str) -> str:
