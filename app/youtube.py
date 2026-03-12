@@ -39,7 +39,12 @@ def find_most_relevant_video(
     fallback = _search_fallback(query)
     if not youtube_api_key:
         return fallback
-    prioritized = _find_prioritized_video_from_search_page(fallback, timeout_seconds)
+    required_tokens = _required_title_tokens(lesson)
+    prioritized = _find_prioritized_video_from_search_page(
+        fallback,
+        required_tokens=required_tokens,
+        timeout_seconds=timeout_seconds,
+    )
     if prioritized is not None:
         return prioritized
     return fallback
@@ -47,6 +52,91 @@ def find_most_relevant_video(
 
 def _build_query(lesson: Lesson) -> str:
     return f"{lesson.title} {lesson.author} resumo"
+
+
+def _required_title_tokens(lesson: Lesson) -> set[str]:
+    title_tokens = _extract_significant_tokens(lesson.title)
+    if title_tokens:
+        return set(title_tokens)
+    author_tokens = _extract_significant_tokens(lesson.author)
+    return set(author_tokens)
+
+
+def _normalize_text(text: str) -> str:
+    lowered = unescape(text or "").lower().strip()
+    normalized = unicodedata.normalize("NFKD", lowered).encode("ascii", "ignore").decode("ascii")
+    return normalized
+
+
+def _tokenize(text: str) -> list[str]:
+    normalized = _normalize_text(text)
+    tokens = re.findall(r"[a-z0-9]+", normalized)
+    return [t for t in tokens if t]
+
+
+def _extract_significant_tokens(text: str) -> list[str]:
+    stopwords = {
+        "a",
+        "as",
+        "o",
+        "os",
+        "um",
+        "uma",
+        "de",
+        "do",
+        "da",
+        "dos",
+        "das",
+        "e",
+        "em",
+        "no",
+        "na",
+        "nos",
+        "nas",
+        "para",
+        "por",
+        "com",
+        "sem",
+        "ao",
+        "aos",
+        "sobre",
+        "resumo",
+        "resenha",
+    }
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for token in _tokenize(text):
+        if token in stopwords:
+            continue
+        if token.isdigit():
+            if len(token) < 2:
+                continue
+        elif len(token) < 3:
+            continue
+        if token in seen:
+            continue
+        ordered.append(token)
+        seen.add(token)
+    return ordered
+
+
+def _title_match_score(required_tokens: set[str], video_title: str) -> int:
+    if not required_tokens:
+        return 0
+    title_tokens = set(_tokenize(video_title))
+    score = 0
+    for token in required_tokens:
+        if token not in title_tokens:
+            continue
+        if token.isdigit():
+            score += 5
+        elif len(token) >= 7:
+            score += 3
+        elif len(token) >= 5:
+            score += 2
+        else:
+            score += 1
+    return score
 
 
 def _search_fallback(query: str) -> YoutubeVideoReference:
@@ -60,6 +150,7 @@ def _search_fallback(query: str) -> YoutubeVideoReference:
 
 def _find_prioritized_video_from_search_page(
     fallback: YoutubeVideoReference,
+    required_tokens: set[str],
     timeout_seconds: float,
 ) -> YoutubeVideoReference | None:
     try:
@@ -69,7 +160,7 @@ def _find_prioritized_video_from_search_page(
         if payload is None:
             return None
 
-        best_by_priority: dict[int, tuple[int, str, str]] = {}
+        best_by_priority: dict[int, tuple[int, int, str, str]] = {}
         for video in _iter_video_renderers(payload):
             channel_handle = _extract_channel_handle(video)
             priority = _preferred_priority(channel_handle)
@@ -79,15 +170,18 @@ def _find_prioritized_video_from_search_page(
             if not video_id:
                 continue
             title = _extract_title(video)
+            score = _title_match_score(required_tokens, title)
+            if required_tokens and score <= 0:
+                continue
             views = _extract_view_count(video)
             current = best_by_priority.get(priority)
-            if current is None or views > current[0]:
-                best_by_priority[priority] = (views, video_id, title)
+            if current is None or score > current[0] or (score == current[0] and views > current[1]):
+                best_by_priority[priority] = (score, views, video_id, title)
         if not best_by_priority:
             return None
 
         best_priority = min(best_by_priority)
-        _, best_id, best_title = best_by_priority[best_priority]
+        _, _, best_id, best_title = best_by_priority[best_priority]
         return YoutubeVideoReference(
             title=best_title or "Video recomendado no YouTube",
             url=f"https://www.youtube.com/watch?v={best_id}",
@@ -201,11 +295,15 @@ def _preferred_priority(handle: str | None) -> int | None:
 def _parse_view_count_text(text: str) -> int:
     if not text:
         return 0
-    lowered = unescape(text).lower()
-    lowered = lowered.replace("\xa0", " ").replace("visualizações", "").replace("visualizacao", "")
-    lowered = lowered.replace("views", "").replace("view", "")
-    lowered = lowered.strip()
-    normalized = unicodedata.normalize("NFKD", lowered).encode("ascii", "ignore").decode("ascii")
+    normalized = _normalize_text(text)
+    normalized = (
+        normalized.replace("\xa0", " ")
+        .replace("visualizacoes", "")
+        .replace("visualizacao", "")
+        .replace("views", "")
+        .replace("view", "")
+        .strip()
+    )
 
     match = re.search(r"(\d[\d\.,]*)", normalized)
     if not match:

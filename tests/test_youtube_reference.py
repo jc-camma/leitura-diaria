@@ -61,7 +61,7 @@ def test_youtube_prefers_configured_channels_in_order(monkeypatch) -> None:  # n
                                         {
                                             "videoRenderer": {
                                                 "videoId": "vid-arata-high",
-                                                "title": {"runs": [{"text": "Arata top"}]},
+                                                "title": {"runs": [{"text": "As 48 Leis do Poder (resumo) - Arata top"}]},
                                                 "ownerText": {
                                                     "runs": [
                                                         {
@@ -80,7 +80,7 @@ def test_youtube_prefers_configured_channels_in_order(monkeypatch) -> None:  # n
                                         {
                                             "videoRenderer": {
                                                 "videoId": "vid-seja-low",
-                                                "title": {"runs": [{"text": "Seja prioridade"}]},
+                                                "title": {"runs": [{"text": "As 48 Leis do Poder - Seja prioridade"}]},
                                                 "ownerText": {
                                                     "runs": [
                                                         {
@@ -116,7 +116,7 @@ def test_youtube_prefers_configured_channels_in_order(monkeypatch) -> None:  # n
     result = find_most_relevant_video(_lesson(), youtube_api_key="fake-key")
     assert result.source == "search"
     assert result.url == "https://www.youtube.com/watch?v=vid-seja-low"
-    assert result.title == "Seja prioridade"
+    assert result.title == "As 48 Leis do Poder - Seja prioridade"
 
 
 def test_youtube_picks_most_viewed_inside_same_priority_channel(monkeypatch) -> None:  # noqa: ANN001
@@ -132,7 +132,7 @@ def test_youtube_picks_most_viewed_inside_same_priority_channel(monkeypatch) -> 
                                         {
                                             "videoRenderer": {
                                                 "videoId": "vid-seja-low",
-                                                "title": {"runs": [{"text": "Seja baixo"}]},
+                                                "title": {"runs": [{"text": "As 48 Leis do Poder - Seja baixo"}]},
                                                 "ownerText": {
                                                     "runs": [
                                                         {
@@ -151,7 +151,7 @@ def test_youtube_picks_most_viewed_inside_same_priority_channel(monkeypatch) -> 
                                         {
                                             "videoRenderer": {
                                                 "videoId": "vid-seja-top",
-                                                "title": {"runs": [{"text": "Seja topo"}]},
+                                                "title": {"runs": [{"text": "As 48 Leis do Poder - Seja topo"}]},
                                                 "ownerText": {
                                                     "runs": [
                                                         {
@@ -186,7 +186,82 @@ def test_youtube_picks_most_viewed_inside_same_priority_channel(monkeypatch) -> 
     monkeypatch.setattr("app.youtube.urlopen", _fake_urlopen)
     result = find_most_relevant_video(_lesson(), youtube_api_key="fake-key")
     assert result.url == "https://www.youtube.com/watch?v=vid-seja-top"
-    assert result.title == "Seja topo"
+    assert result.title == "As 48 Leis do Poder - Seja topo"
+
+
+def test_youtube_ignores_irrelevant_popular_video_from_preferred_channel(monkeypatch) -> None:  # noqa: ANN001
+    initial_data = {
+        "contents": {
+            "twoColumnSearchResultsRenderer": {
+                "primaryContents": {
+                    "sectionListRenderer": {
+                        "contents": [
+                            {
+                                "itemSectionRenderer": {
+                                    "contents": [
+                                        {
+                                            "videoRenderer": {
+                                                "videoId": "vid-seja-irrelevant",
+                                                "title": {
+                                                    "runs": [
+                                                        {
+                                                            "text": "[COMPLETO] AS 16 LEIS DO SUCESSO | Napoleon Hill | Jacob Petry | SejaUmaPessoaMelhor"
+                                                        }
+                                                    ]
+                                                },
+                                                "ownerText": {
+                                                    "runs": [
+                                                        {
+                                                            "text": "Seja",
+                                                            "navigationEndpoint": {
+                                                                "browseEndpoint": {
+                                                                    "canonicalBaseUrl": "/@sejaumapessoamelhor"
+                                                                }
+                                                            },
+                                                        }
+                                                    ]
+                                                },
+                                                "viewCountText": {"simpleText": "12 mi visualizações"},
+                                            }
+                                        },
+                                        {
+                                            "videoRenderer": {
+                                                "videoId": "vid-seja-relevant",
+                                                "title": {"runs": [{"text": "As 48 Leis do Poder (resumo) - aula completa"}]},
+                                                "ownerText": {
+                                                    "runs": [
+                                                        {
+                                                            "text": "Seja",
+                                                            "navigationEndpoint": {
+                                                                "browseEndpoint": {
+                                                                    "canonicalBaseUrl": "/@sejaumapessoamelhor"
+                                                                }
+                                                            },
+                                                        }
+                                                    ]
+                                                },
+                                                "viewCountText": {"simpleText": "8 mil visualizações"},
+                                            }
+                                        },
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+    html = _wrap_initial_data(initial_data)
+
+    def _fake_urlopen(url, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        if "youtube.com/results?" in url:
+            return DummyTextResponse(html)
+        raise AssertionError(f"URL inesperada: {url}")
+
+    monkeypatch.setattr("app.youtube.urlopen", _fake_urlopen)
+    result = find_most_relevant_video(_lesson(), youtube_api_key="fake-key")
+    assert result.url == "https://www.youtube.com/watch?v=vid-seja-relevant"
 
 
 def test_youtube_returns_search_results_when_no_preferred_channel(monkeypatch) -> None:  # noqa: ANN001
