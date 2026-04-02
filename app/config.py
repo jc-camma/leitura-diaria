@@ -32,6 +32,7 @@ class RuntimePaths:
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
     youtube_api_key: str | None = None
+    read_confirm_base_url: str | None = None
 
 
 class ConfigError(RuntimeError):
@@ -55,6 +56,7 @@ def runtime_paths() -> RuntimePaths:
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
         youtube_api_key=os.getenv("YOUTUBE_API_KEY"),
+        read_confirm_base_url=os.getenv("READ_CONFIRM_BASE_URL", "").strip() or None,
     )
 
 

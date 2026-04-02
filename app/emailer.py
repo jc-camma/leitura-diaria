@@ -23,14 +23,21 @@ def build_email_body(
     generation_date: date,
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
+    read_confirmation_url: str | None = None,
 ) -> str:
     concepts = "\n".join([f"- {concept}" for concept in lesson.concepts])
     video_block = ""
     if youtube_video_url:
         video_label = youtube_video_title or "Video recomendado no YouTube"
         video_block = f"\n\nVideo recomendado:\n{video_label}\n{youtube_video_url}"
+    confirmation_block = ""
+    if read_confirmation_url:
+        confirmation_block = (
+            "\n\nQuando terminar a leitura, confirme aqui:\n"
+            f"{read_confirmation_url}"
+        )
 
-    return (
+    body = (
         "Bom dia,\n\n"
         f"Segue a leitura do Dia {lesson.day} em anexo (PDF).\n"
         f"Tema: {lesson.theme}\n"
@@ -43,9 +50,11 @@ def build_email_body(
         f"{concepts}"
         f"{video_block}\n\n"
         "Leitura estimada: 10 a 15 minutos.\n\n"
-        "Bons estudos,\n"
-        "MBA 15min"
     )
+    if confirmation_block:
+        body += f"{confirmation_block}\n\n"
+    body += "Bons estudos,\nMBA 15min"
+    return body
 
 
 def send_lesson_email(
@@ -55,6 +64,7 @@ def send_lesson_email(
     generation_date: date,
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
+    read_confirmation_url: str | None = None,
 ) -> None:
     message = EmailMessage()
     message["Subject"] = build_email_subject(lesson)
@@ -66,6 +76,7 @@ def send_lesson_email(
             generation_date,
             youtube_video_url=youtube_video_url,
             youtube_video_title=youtube_video_title,
+            read_confirmation_url=read_confirmation_url,
         )
     )
 
@@ -80,9 +91,16 @@ def send_lesson_email(
 
     context = ssl.create_default_context()
     try:
-        with smtplib.SMTP(smtp_config.host, smtp_config.port, timeout=30) as server:
-            server.starttls(context=context)
+        with _open_smtp_connection(smtp_config, context) as server:
             server.login(smtp_config.user, smtp_config.password)
             server.send_message(message)
     except Exception as exc:
         raise EmailSendError(f"Falha no envio SMTP: {exc}") from exc
+
+
+def _open_smtp_connection(smtp_config: SmtpConfig, context: ssl.SSLContext):
+    if smtp_config.port == 465:
+        return smtplib.SMTP_SSL(smtp_config.host, smtp_config.port, timeout=30, context=context)
+    server = smtplib.SMTP(smtp_config.host, smtp_config.port, timeout=30)
+    server.starttls(context=context)
+    return server

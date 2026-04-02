@@ -35,6 +35,7 @@ def generate_lesson_pdf(
     generation_date: date,
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
+    read_confirmation_url: str | None = None,
 ) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     filename = build_pdf_filename(generation_date, lesson.day, lesson.title)
@@ -112,6 +113,14 @@ def generate_lesson_pdf(
             ]
         )
 
+    if read_confirmation_url:
+        story.extend(
+            [
+                Paragraph("Confirmacao de leitura", styles["SubHeader"]),
+                Paragraph(_build_confirmation_link_paragraph(read_confirmation_url), styles["Body"]),
+            ]
+        )
+
     doc.build(
         story,
         onFirstPage=lambda canvas, _: _draw_footer(canvas, generation_date),
@@ -137,6 +146,11 @@ def _build_youtube_link_paragraph(url: str, title: str | None) -> str:
     safe_url = escape(url, {'"': "&quot;"})
     _ = title
     return f'<link href="{safe_url}" color="blue"><u>Video recomendado no YouTube</u></link>'
+
+
+def _build_confirmation_link_paragraph(url: str) -> str:
+    safe_url = escape(url, {'"': "&quot;"})
+    return f'<link href="{safe_url}" color="blue"><u>Clique aqui para confirmar a leitura</u></link>'
 
 
 def _strip_markdown_emphasis(text: str) -> str:

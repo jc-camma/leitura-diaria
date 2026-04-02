@@ -1,9 +1,9 @@
 # Setup Completo (Windows + Linux)
 
-## 1) Pré-requisitos
+## 1) Pre-requisitos
 
 - Python 3.11 ou superior
-- Conta SMTP válida (Gmail, Outlook ou outro provedor com TLS)
+- Conta SMTP valida (Gmail, Outlook ou outro provedor com TLS)
 
 ## 2) Criar e ativar venv
 
@@ -39,9 +39,10 @@ EMAIL_TO=destinatario@dominio.com
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
 YOUTUBE_API_KEY=
+READ_CONFIRM_BASE_URL=
 ```
 
-## 4) Execução manual
+## 4) Execucao manual
 
 Preview (gera PDF sem enviar):
 
@@ -55,20 +56,26 @@ Envio imediato:
 python -m app.run --send-now
 ```
 
-Forçar reenvio no mesmo dia:
+Forcar reenvio no mesmo dia:
 
 ```bash
 python -m app.run --send-now --force
 ```
 
-Teste de dia específico sem alterar estado:
+Teste de dia especifico sem alterar estado:
 
 ```bash
 python -m app.run --send-now --day 7
 python -m app.run --preview --day 7
 ```
 
-## 5) Agendamento Linux (cron às 07:00)
+Marcar a leitura pendente atual como lida:
+
+```bash
+python -m app.run --mark-last-read
+```
+
+## 5) Agendamento Linux (cron as 07:00)
 
 Abra o crontab:
 
@@ -82,9 +89,9 @@ Adicione a linha (ajuste o caminho):
 0 7 * * * cd /caminho/para/projeto && /caminho/para/projeto/.venv/bin/python -m app.run --send-now >> /caminho/para/projeto/out/cron.log 2>&1
 ```
 
-## 6) Agendamento Windows (Task Scheduler às 07:00)
+## 6) Agendamento Windows (Task Scheduler as 07:00)
 
-### Opção GUI
+### Opcao GUI
 
 1. Abra `Task Scheduler`.
 2. Crie `Create Task...`.
@@ -94,40 +101,54 @@ Adicione a linha (ajuste o caminho):
 6. Add arguments: `-m app.run --send-now`
 7. Start in: pasta raiz do projeto.
 
-### Opção via `schtasks`
+### Opcao via `schtasks`
 
 ```powershell
 schtasks /Create /SC DAILY /ST 07:00 /TN "MBA15min" /TR "\"C:\Users\SeuUsuario\Dev\Projeto\.venv\Scripts\python.exe\" -m app.run --send-now" /F
 ```
 
-## 7) SMTP (Gmail / Outlook genérico)
+## 7) SMTP (Gmail / Outlook generico)
 
 ### Gmail
 
 - Host: `smtp.gmail.com`
 - Port: `587`
 - TLS: sim
-- Usuário: seu e-mail Gmail
-- Senha: use `App Password` (com 2FA), não a senha normal da conta.
+- Usuario: seu e-mail Gmail
+- Senha: use `App Password` (com 2FA), nao a senha normal da conta.
 
 ### Outlook / Microsoft 365
 
 - Host: `smtp.office365.com`
 - Port: `587`
 - TLS: sim
-- Usuário: e-mail completo
-- Senha: senha da conta ou app password/política corporativa.
+- Usuario: e-mail completo
+- Senha: senha da conta ou app password/politica corporativa.
 
-## 8) Estado e idempotência
+## 8) Estado e idempotencia
 
 - Estado salvo em `data/state.json`.
-- Se já enviou no dia atual, o script não reenvia.
-- `--force` permite reenviar no mesmo dia sem avançar o índice.
-- `--day N` não altera o estado (modo de teste).
+- Se ja enviou no dia atual, o script nao reenvia.
+- Se a ultima leitura ainda nao foi confirmada como lida, o proximo envio fica bloqueado.
+- `--force` permite reenviar no mesmo dia sem avancar o indice.
+- `--day N` nao altera o estado (modo de teste).
 
-## 9) Completar dias placeholders
+## 9) Confirmacao de leitura por link
 
-Listar dias ainda não preenchidos:
+- Configure `READ_CONFIRM_BASE_URL` com uma URL publica base, por exemplo `https://seu-dominio.com/leitura`.
+- Inicie o servidor HTTP de confirmacao:
+
+```bash
+python -m app.run --serve-feedback --host 0.0.0.0 --port 8000
+```
+
+- O e-mail e o PDF passarao a incluir um link do tipo `/confirm-read?token=...`.
+- Quando o link for acessado, a leitura atual sera marcada como lida.
+- Depois disso, o proximo `--send-now` volta a ficar liberado.
+
+## 10) Completar dias placeholders
+
+Listar dias ainda nao preenchidos:
 
 ```bash
 python -m app.content_tools --list-placeholders

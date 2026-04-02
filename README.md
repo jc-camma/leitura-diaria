@@ -38,6 +38,10 @@ OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
 
 YOUTUBE_API_KEY=
+
+# Opcional: URL publica base para confirmar a leitura por link no e-mail e no PDF
+# Exemplo: https://seu-dominio.com/leitura
+READ_CONFIRM_BASE_URL=
 ```
 
 ## Pipeline
@@ -90,9 +94,16 @@ python -m app.run --send-now
 python -m app.run --send-now --force
 python -m app.run --preview --day 12
 python -m app.run --send-now --day 12
+python -m app.run --mark-last-read
+python -m app.run --serve-feedback --host 0.0.0.0 --port 8000
 ```
 
 `--day N` gera/envia um dia especifico sem alterar o progresso salvo no `state.json`.
+
+Se houver uma leitura pendente ainda nao confirmada como lida, o proximo `--send-now` fica bloqueado ate a confirmacao. Essa confirmacao pode acontecer de duas formas:
+
+- Link no e-mail e no PDF: configure `READ_CONFIRM_BASE_URL` e rode `python -m app.run --serve-feedback` em um host acessivel.
+- Confirmacao manual: rode `python -m app.run --mark-last-read`.
 
 ## Testes
 
