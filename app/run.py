@@ -12,6 +12,7 @@ from app.mailer import EmailSendError, deliver_lesson_email
 from app.pdf_exporter import export_pdf
 from app.read_feedback import (
     build_read_confirmation_url,
+    build_send_next_reading_url,
     confirm_latest_pending_read,
     confirm_read_from_token,
     serve_read_feedback,
@@ -75,6 +76,7 @@ def run() -> int:
     store = StateStore(paths.state_file)
     current_state = store.load()
     today = date.today()
+    require_confirmation = bool(paths.read_confirm_base_url)
 
     if args.mark_last_read:
         return _mark_latest_pending_read(paths.state_file)
@@ -83,9 +85,17 @@ def run() -> int:
         return _mark_read_by_token(paths.state_file, args.mark_read_token)
 
     manual_day = args.day is not None
-    day_to_send = _resolve_day_to_process(args, current_state, today)
+    day_to_send = _resolve_day_to_process(args, current_state, today, require_confirmation=require_confirmation)
     if day_to_send is None:
-        logger.info(StateStore.block_reason(current_state, today, force=args.force) or "Envio bloqueado.")
+        logger.info(
+            StateStore.block_reason(
+                current_state,
+                today,
+                force=args.force,
+                require_confirmation=require_confirmation,
+            )
+            or "Envio bloqueado."
+        )
         return 0
 
     entry = select_daily_entry(paths.data_file, day_to_send)
@@ -93,8 +103,10 @@ def run() -> int:
     youtube_ref = find_most_relevant_video(lesson, youtube_api_key=paths.youtube_api_key)
     tracking_token = None if manual_day or args.preview else StateStore.get_tracking_token_for_lesson(current_state, day_to_send)
     read_confirmation_url = None
+    next_reading_url = None
     if tracking_token and paths.read_confirm_base_url:
         read_confirmation_url = build_read_confirmation_url(paths.read_confirm_base_url, tracking_token)
+        next_reading_url = build_send_next_reading_url(paths.read_confirm_base_url, tracking_token)
     pdf_path = export_pdf(
         lesson,
         paths.out_dir,
@@ -102,6 +114,7 @@ def run() -> int:
         youtube_video_url=youtube_ref.url,
         youtube_video_title=youtube_ref.title,
         read_confirmation_url=read_confirmation_url,
+        next_reading_url=next_reading_url,
     )
     logger.info("PDF gerado: %s (palavras aproximadas: %s)", pdf_path, lesson.word_count())
     logger.info("Link YouTube (%s): %s", youtube_ref.source, youtube_ref.url)
@@ -120,6 +133,7 @@ def run() -> int:
         youtube_video_url=youtube_ref.url,
         youtube_video_title=youtube_ref.title,
         read_confirmation_url=read_confirmation_url,
+        next_reading_url=next_reading_url,
     )
     logger.info("E-mail enviado para %s", smtp_config.email_to)
 
@@ -151,7 +165,12 @@ def run() -> int:
     return 0
 
 
-def _resolve_day_to_process(args: argparse.Namespace, state: State, today: date) -> int | None:
+def _resolve_day_to_process(
+    args: argparse.Namespace,
+    state: State,
+    today: date,
+    require_confirmation: bool,
+) -> int | None:
     if args.day is not None:
         if args.day < 1 or args.day > 365:
             raise ValueError("O argumento --day deve estar entre 1 e 365.")
@@ -163,7 +182,7 @@ def _resolve_day_to_process(args: argparse.Namespace, state: State, today: date)
             raise ReadingPlanCompletedError("Todas as 365 leituras ja foram concluidas.")
         return next_day
 
-    if not StateStore.can_send_on(state, today, force=args.force):
+    if not StateStore.can_send_on(state, today, force=args.force, require_confirmation=require_confirmation):
         return None
     return StateStore.resolve_day_index_for_send(state, today, force=args.force)
 

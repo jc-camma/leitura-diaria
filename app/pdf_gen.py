@@ -36,6 +36,7 @@ def generate_lesson_pdf(
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
     read_confirmation_url: str | None = None,
+    next_reading_url: str | None = None,
 ) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     filename = build_pdf_filename(generation_date, lesson.day, lesson.title)
@@ -121,6 +122,14 @@ def generate_lesson_pdf(
             ]
         )
 
+    if next_reading_url:
+        story.extend(
+            [
+                Paragraph("Proxima leitura", styles["SubHeader"]),
+                Paragraph(_build_next_reading_link_paragraph(next_reading_url), styles["Body"]),
+            ]
+        )
+
     doc.build(
         story,
         onFirstPage=lambda canvas, _: _draw_footer(canvas, generation_date),
@@ -151,6 +160,11 @@ def _build_youtube_link_paragraph(url: str, title: str | None) -> str:
 def _build_confirmation_link_paragraph(url: str) -> str:
     safe_url = escape(url, {'"': "&quot;"})
     return f'<link href="{safe_url}" color="blue"><u>Clique aqui para confirmar a leitura</u></link>'
+
+
+def _build_next_reading_link_paragraph(url: str) -> str:
+    safe_url = escape(url, {'"': "&quot;"})
+    return f'<link href="{safe_url}" color="blue"><u>Clique aqui para receber a proxima leitura agora</u></link>'
 
 
 def _strip_markdown_emphasis(text: str) -> str:

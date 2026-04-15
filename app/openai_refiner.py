@@ -18,8 +18,8 @@ _SYSTEM_MESSAGE = (
 )
 
 _BOOK_SUMMARY_PROMPT = (
-    "Voce e um analista especializado em livros de nao ficcao, com foco em extrair ideias aplicaveis para "
-    "profissionais e gestores.\n\n"
+    "Voce e um analista especializado em livros de nao ficcao, ficcao literaria e obras classicas de pensamento, "
+    "com foco em extrair sentido, contexto e implicacoes praticas sem simplificar demais.\n\n"
     "Sua tarefa e gerar um resumo claro, estruturado e pratico do livro informado.\n\n"
     "O texto deve ter aproximadamente 900 a 1200 palavras, o suficiente para cerca de 15 minutos de leitura.\n\n"
     "Use linguagem simples, objetiva e profissional.\n\n"
@@ -33,16 +33,22 @@ _BOOK_SUMMARY_PROMPT = (
     "   Explique o contexto da obra, por que ela se tornou relevante e quais situacoes praticas ela ajuda a compreender.\n\n"
     "3. Conceitos fundamentais do livro\n"
     "   Liste e explique os conceitos importantes apresentados pelo autor, sem limitar a quantidade.\n\n"
+    "   Se o livro for de ficcao, trate como conceitos os temas, conflitos, simbolos, dilemas, mecanismos "
+    "narrativos ou perguntas morais que organizam a obra.\n\n"
     "Para cada conceito:\n\n"
     "* nome do conceito\n"
     "* explicacao clara\n"
     "* exemplo pratico de aplicacao no trabalho ou na vida pessoal\n\n"
     "4. Modelo mental ou estrutura apresentada pelo autor\n"
     "   Explique qualquer framework, metodo ou estrutura importante apresentada no livro.\n\n"
+    "   Se nao houver framework explicito, descreva a arquitetura narrativa, lente interpretativa ou estrutura "
+    "moral que ajuda a compreender a obra.\n\n"
     "5. Exemplo ou historia marcante do livro\n"
-    "   Descreva uma historia, estudo de caso ou exemplo que o autor utiliza para ilustrar suas ideias.\n\n"
+    "   Descreva uma historia, estudo de caso, cena ou exemplo que o autor utiliza para ilustrar suas ideias.\n\n"
     "6. Aplicacao pratica\n"
     "   Liste 3 a 5 acoes praticas que uma pessoa poderia comecar a aplicar ja na proxima semana com base nas ideias do livro.\n\n"
+    "   Em ficcao, essas acoes podem ser perguntas de leitura, criterios de observacao do mundo, exercicios de "
+    "interpretacao ou pequenas mudancas de conduta inspiradas pela obra.\n\n"
     "7. Limitacoes ou criticas possiveis\n"
     "   Explique brevemente possiveis limitacoes das ideias do autor ou contextos em que elas podem nao funcionar.\n\n"
     "8. Sintese final\n"
@@ -188,11 +194,13 @@ def _build_summary_user_message(entry: "BookEntry") -> str:
     ideas = "\n".join([f"- {item}" for item in entry.key_ideas])
     apps = "\n".join([f"- {item}" for item in entry.practical_applications])
     quote = entry.optional_quote.strip() if entry.optional_quote else "-"
+    category = entry.category.strip() if entry.category else "-"
     return (
         f"{_BOOK_SUMMARY_PROMPT}\n\n"
         "Livro informado:\n"
         f"Titulo: {entry.title}\n"
         f"Autor: {entry.author}\n"
+        f"Categoria: {category}\n"
         f"Tema principal: {entry.theme}\n\n"
         "Dados de apoio para manter aderencia ao conteudo do livro:\n"
         f"Ideias-chave:\n{ideas}\n\n"

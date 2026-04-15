@@ -16,6 +16,7 @@ def deliver_lesson_email(
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
     read_confirmation_url: str | None = None,
+    next_reading_url: str | None = None,
 ) -> None:
     send_lesson_email(
         smtp_config,
@@ -25,6 +26,7 @@ def deliver_lesson_email(
         youtube_video_url=youtube_video_url,
         youtube_video_title=youtube_video_title,
         read_confirmation_url=read_confirmation_url,
+        next_reading_url=next_reading_url,
     )
 
 

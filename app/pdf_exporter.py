@@ -14,6 +14,7 @@ def export_pdf(
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
     read_confirmation_url: str | None = None,
+    next_reading_url: str | None = None,
 ) -> Path:
     return generate_lesson_pdf(
         lesson,
@@ -22,4 +23,5 @@ def export_pdf(
         youtube_video_url=youtube_video_url,
         youtube_video_title=youtube_video_title,
         read_confirmation_url=read_confirmation_url,
+        next_reading_url=next_reading_url,
     )

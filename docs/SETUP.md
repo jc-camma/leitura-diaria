@@ -144,17 +144,26 @@ python -m app.run --serve-feedback --host 0.0.0.0 --port 8000
 
 - O e-mail e o PDF passarao a incluir um link do tipo `/confirm-read?token=...`.
 - Quando o link for acessado, a leitura atual sera marcada como lida.
-- Depois disso, o proximo `--send-now` volta a ficar liberado.
+- Se quiser continuar no mesmo dia, o e-mail e o PDF tambem podem incluir um link `/send-next-reading?token=...`, que confirma a leitura atual e envia a proxima imediatamente.
+- Depois disso, o proximo `--send-now` volta a ficar liberado quando a leitura pendente mais recente for confirmada.
 
-## 10) Completar dias placeholders
+## 10) Regenerar catalogo balanceado
 
-Listar dias ainda nao preenchidos:
+Gerar novamente o `books_365.json` com a curadoria balanceada de ficcao, filosofia, psicologia, economia, geopolitica e outras categorias:
+
+```bash
+python -m app.content_tools --rebalance-catalog
+```
+
+Se quiser inspecionar se ainda existe algum placeholder residual:
 
 ```bash
 python -m app.content_tools --list-placeholders
 ```
 
-Exportar template do dia 21:
+## 11) Ajustar um dia especifico manualmente
+
+Exportar template de um dia:
 
 ```bash
 python -m app.content_tools --export-template 21 > dia21.json

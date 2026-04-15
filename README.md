@@ -102,7 +102,7 @@ python -m app.run --serve-feedback --host 0.0.0.0 --port 8000
 
 Se houver uma leitura pendente ainda nao confirmada como lida, o proximo `--send-now` fica bloqueado ate a confirmacao. Essa confirmacao pode acontecer de duas formas:
 
-- Link no e-mail e no PDF: configure `READ_CONFIRM_BASE_URL` e rode `python -m app.run --serve-feedback` em um host acessivel.
+- Link no e-mail e no PDF: configure `READ_CONFIRM_BASE_URL` e rode `python -m app.run --serve-feedback` em um host acessivel. O mesmo e-mail/PDF tambem pode trazer um segundo link para enviar a proxima leitura imediatamente.
 - Confirmacao manual: rode `python -m app.run --mark-last-read`.
 
 ## Testes

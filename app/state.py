@@ -55,10 +55,15 @@ class StateStore:
             json.dump(asdict(state), fh, ensure_ascii=False, indent=2)
 
     @staticmethod
-    def can_send_on(state: State, today: date, force: bool = False) -> bool:
+    def can_send_on(
+        state: State,
+        today: date,
+        force: bool = False,
+        require_confirmation: bool = True,
+    ) -> bool:
         if force:
             return True
-        if StateStore.has_pending_read_confirmation(state):
+        if require_confirmation and StateStore.has_pending_read_confirmation(state):
             return False
         return state.last_sent_date != today.isoformat()
 
@@ -74,6 +79,17 @@ class StateStore:
         next_day = state.last_day_index + 1
         if next_day > 365:
             raise ReadingPlanCompletedError("As 365 leituras já foram concluídas.")
+        return next_day
+
+    @staticmethod
+    def can_send_additional_on(state: State) -> bool:
+        return not StateStore.has_pending_read_confirmation(state)
+
+    @staticmethod
+    def resolve_day_index_for_additional_send(state: State) -> int:
+        next_day = state.last_day_index + 1
+        if next_day > 365:
+            raise ReadingPlanCompletedError("As 365 leituras jÃ¡ foram concluÃ­das.")
         return next_day
 
     @staticmethod
@@ -110,11 +126,16 @@ class StateStore:
         return pending is not None and pending.read_at is None
 
     @staticmethod
-    def block_reason(state: State, today: date, force: bool = False) -> str | None:
+    def block_reason(
+        state: State,
+        today: date,
+        force: bool = False,
+        require_confirmation: bool = True,
+    ) -> str | None:
         if force:
             return None
         pending = state.pending_read_confirmation
-        if pending is not None and pending.read_at is None:
+        if require_confirmation and pending is not None and pending.read_at is None:
             return f"Envio bloqueado: a leitura do Dia {pending.day} ainda nao foi confirmada como lida."
         if state.last_sent_date == today.isoformat():
             return "Licao de hoje ja foi enviada; use --force para reenviar."

@@ -24,6 +24,7 @@ def build_email_body(
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
     read_confirmation_url: str | None = None,
+    next_reading_url: str | None = None,
 ) -> str:
     concepts = "\n".join([f"- {concept}" for concept in lesson.concepts])
     video_block = ""
@@ -35,6 +36,12 @@ def build_email_body(
         confirmation_block = (
             "\n\nQuando terminar a leitura, confirme aqui:\n"
             f"{read_confirmation_url}"
+        )
+    next_reading_block = ""
+    if next_reading_url:
+        next_reading_block = (
+            "\n\nSe quiser continuar hoje e receber a proxima leitura imediatamente, use este link:\n"
+            f"{next_reading_url}"
         )
 
     body = (
@@ -53,6 +60,8 @@ def build_email_body(
     )
     if confirmation_block:
         body += f"{confirmation_block}\n\n"
+    if next_reading_block:
+        body += f"{next_reading_block}\n\n"
     body += "Bons estudos,\nMBA 15min"
     return body
 
@@ -65,6 +74,7 @@ def send_lesson_email(
     youtube_video_url: str | None = None,
     youtube_video_title: str | None = None,
     read_confirmation_url: str | None = None,
+    next_reading_url: str | None = None,
 ) -> None:
     message = EmailMessage()
     message["Subject"] = build_email_subject(lesson)
@@ -77,6 +87,7 @@ def send_lesson_email(
             youtube_video_url=youtube_video_url,
             youtube_video_title=youtube_video_title,
             read_confirmation_url=read_confirmation_url,
+            next_reading_url=next_reading_url,
         )
     )
 

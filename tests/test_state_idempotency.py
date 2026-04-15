@@ -38,6 +38,21 @@ def test_pending_read_confirmation_blocks_new_send() -> None:
     assert StateStore.can_send_on(state, today, force=False) is False
 
 
+def test_pending_read_confirmation_does_not_block_when_confirmation_is_disabled() -> None:
+    today = date(2026, 3, 6)
+    state = State(
+        last_sent_date="2026-03-05",
+        last_day_index=8,
+        pending_read_confirmation=PendingReadConfirmation(
+            day=8,
+            title="Titulo",
+            sent_date="2026-03-05",
+            token="abc123",
+        ),
+    )
+    assert StateStore.can_send_on(state, today, force=False, require_confirmation=False) is True
+
+
 def test_force_resends_pending_day_while_unread() -> None:
     today = date(2026, 3, 6)
     state = State(
@@ -84,3 +99,23 @@ def test_register_success_updates_index_to_actual_sent_day() -> None:
     assert updated.last_day_index == 26
     assert updated.pending_read_confirmation is not None
     assert updated.pending_read_confirmation.day == 26
+
+
+def test_additional_send_ignores_same_day_lock_after_confirmation() -> None:
+    state = State(last_sent_date="2026-03-05", last_day_index=8)
+    assert StateStore.can_send_additional_on(state) is True
+    assert StateStore.resolve_day_index_for_additional_send(state) == 9
+
+
+def test_additional_send_stays_blocked_while_current_reading_is_unread() -> None:
+    state = State(
+        last_sent_date="2026-03-05",
+        last_day_index=8,
+        pending_read_confirmation=PendingReadConfirmation(
+            day=8,
+            title="Titulo",
+            sent_date="2026-03-05",
+            token="abc123",
+        ),
+    )
+    assert StateStore.can_send_additional_on(state) is False

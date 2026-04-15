@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from app.catalog_seed import build_balanced_catalog
 from app.config import runtime_paths
 
 
@@ -12,6 +13,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--list-placeholders", action="store_true", help="Lista dias com placeholder.")
     parser.add_argument("--export-template", type=int, help="Exporta template JSON para o dia informado.")
     parser.add_argument("--apply-file", type=Path, help="Aplica JSON de um dia e salva no books_365.json.")
+    parser.add_argument("--rebalance-catalog", action="store_true", help="Regenera books_365.json com curadoria balanceada.")
     return parser.parse_args()
 
 
@@ -33,6 +35,7 @@ def main() -> None:
             "day": day,
             "title": "Titulo da leitura",
             "author": "Autor",
+            "category": "Categoria",
             "theme": "Tema principal",
             "key_ideas": [
                 "Ideia 1",
@@ -52,6 +55,15 @@ def main() -> None:
         print(json.dumps(template, ensure_ascii=False, indent=2))
         return
 
+    if args.rebalance_catalog:
+        payload = build_balanced_catalog()
+        data_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        categories = sorted({item["category"] for item in payload})
+        print(f"Catalogo balanceado gravado em {data_file}")
+        print(f"Total de itens: {len(payload)}")
+        print("Categorias:", ", ".join(categories))
+        return
+
     if args.apply_file:
         incoming = json.loads(args.apply_file.read_text(encoding="utf-8"))
         day = int(incoming["day"])
@@ -62,9 +74,8 @@ def main() -> None:
         print(f"Dia {day} atualizado em {data_file}")
         return
 
-    raise SystemExit("Use --list-placeholders, --export-template N ou --apply-file ARQUIVO.")
+    raise SystemExit("Use --list-placeholders, --export-template N, --rebalance-catalog ou --apply-file ARQUIVO.")
 
 
 if __name__ == "__main__":
     main()
-
