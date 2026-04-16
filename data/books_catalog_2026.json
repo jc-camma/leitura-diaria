@@ -1,0 +1,801 @@
+{
+  "year": 2026,
+  "generated_at": "2026-04-16T19:43:39.400855+00:00",
+  "areas": [
+    {
+      "area": "Liderança e Gestão",
+      "books": [
+        {
+          "title": "A Arte da Guerra",
+          "author": "Sun Tzu",
+          "theme": "Estratégias de liderança e gestão em contextos de conflito"
+        },
+        {
+          "title": "Liderança: A Inteligência Emocional na Gestão",
+          "author": "Daniel Goleman",
+          "theme": "Impacto da inteligência emocional na liderança"
+        },
+        {
+          "title": "O Monge e o Executivo",
+          "author": "James C. Hunter",
+          "theme": "Princípios de liderança servidora"
+        },
+        {
+          "title": "A Quinta Disciplina",
+          "author": "Peter Senge",
+          "theme": "Organizações que aprendem e gestão do conhecimento"
+        },
+        {
+          "title": "Good to Great",
+          "author": "Jim Collins",
+          "theme": "Transição de empresas medianas para grandes"
+        },
+        {
+          "title": "Drive: A Surpreendente Verdade Sobre o Que Nos Motiva",
+          "author": "Daniel H. Pink",
+          "theme": "Motivação e liderança no ambiente de trabalho"
+        },
+        {
+          "title": "Os 7 Hábitos das Pessoas Altamente Eficazes",
+          "author": "Stephen R. Covey",
+          "theme": "Princípios de eficácia pessoal e profissional"
+        },
+        {
+          "title": "Liderança e Novas Abordagens",
+          "author": "Rosabeth Moss Kanter",
+          "theme": "Inovação e mudança organizacional"
+        },
+        {
+          "title": "O Gestor Eficaz",
+          "author": "Peter Drucker",
+          "theme": "Princípios da gestão eficaz"
+        },
+        {
+          "title": "Liderança em Tempos Difíceis",
+          "author": "Arianna Huffington",
+          "theme": "Gestão de crises e resiliência"
+        },
+        {
+          "title": "A Coragem de Ser Imperfeito",
+          "author": "Brené Brown",
+          "theme": "Vulnerabilidade e liderança autêntica"
+        },
+        {
+          "title": "O Poder da Vulnerabilidade",
+          "author": "Brené Brown",
+          "theme": "Impacto da vulnerabilidade na liderança"
+        },
+        {
+          "title": "O Líder Resiliente",
+          "author": "Rick Hanson",
+          "theme": "Resiliência e liderança em ambientes desafiadores"
+        },
+        {
+          "title": "Liderança e Cultura Organizacional",
+          "author": "Edgar Schein",
+          "theme": "Relação entre cultura e liderança"
+        }
+      ]
+    },
+    {
+      "area": "Estratégia e Decisão",
+      "books": [
+        {
+          "title": "A Estratégia do Oceano Azul",
+          "author": "W. Chan Kim e Renée Mauborgne",
+          "theme": "Criação de novos mercados e inovação estratégica"
+        },
+        {
+          "title": "Thinking, Fast and Slow",
+          "author": "Daniel Kahneman",
+          "theme": "Processos de decisão e heurísticas cognitivas"
+        },
+        {
+          "title": "Competing on Analytics",
+          "author": "Thomas H. Davenport",
+          "theme": "Uso de dados e análises na formulação de estratégias"
+        },
+        {
+          "title": "Good Strategy Bad Strategy",
+          "author": "Richard Rumelt",
+          "theme": "Diferença entre boa e má estratégia"
+        },
+        {
+          "title": "The Innovator's Dilemma",
+          "author": "Clayton M. Christensen",
+          "theme": "Inovação disruptiva e suas implicações estratégicas"
+        },
+        {
+          "title": "The Art of Strategy",
+          "author": "Avinash K. Dixit e Barry J. Nalebuff",
+          "theme": "Teoria dos jogos aplicada à estratégia"
+        },
+        {
+          "title": "The Lean Startup",
+          "author": "Eric Ries",
+          "theme": "Estratégias de inovação em startups"
+        },
+        {
+          "title": "Blue Ocean Shift",
+          "author": "W. Chan Kim e Renée Mauborgne",
+          "theme": "Expansão de mercados através da inovação"
+        },
+        {
+          "title": "The Strategy Book",
+          "author": "Max Mckeown",
+          "theme": "Princípios e práticas de formulação de estratégia"
+        },
+        {
+          "title": "The Art of War for Executives",
+          "author": "Donald G. Krause",
+          "theme": "Aplicação de estratégias militares no ambiente corporativo"
+        },
+        {
+          "title": "The Decision Book",
+          "author": "Mikael Krogerus e Roman Tschäppeler",
+          "theme": "Modelos de decisão e suas aplicações práticas"
+        },
+        {
+          "title": "Decisive: How to Make Better Choices in Life and Work",
+          "author": "Chip Heath e Dan Heath",
+          "theme": "Melhoria do processo de tomada de decisão"
+        },
+        {
+          "title": "The 33 Strategies of War",
+          "author": "Robert Greene",
+          "theme": "Estratégias de guerra aplicadas ao mundo dos negócios"
+        },
+        {
+          "title": "The Effective Executive",
+          "author": "Peter Drucker",
+          "theme": "Tomada de decisão eficaz na gestão"
+        },
+        {
+          "title": "Strategic Management: Concepts and Cases",
+          "author": "Fred R. David",
+          "theme": "Fundamentos da gestão estratégica"
+        }
+      ]
+    },
+    {
+      "area": "Economia e Negócios",
+      "books": [
+        {
+          "title": "A Riqueza das Nações",
+          "author": "Adam Smith",
+          "theme": "Fundamentos da economia clássica"
+        },
+        {
+          "title": "Capital no Século XXI",
+          "author": "Thomas Piketty",
+          "theme": "Desigualdade econômica e suas implicações"
+        },
+        {
+          "title": "Freakonomics",
+          "author": "Steven D. Levitt e Stephen J. Dubner",
+          "theme": "Economia aplicada a comportamentos sociais"
+        },
+        {
+          "title": "A Teoria Geral do Emprego, do Juro e da Moeda",
+          "author": "John Maynard Keynes",
+          "theme": "Teoria econômica e políticas monetárias"
+        },
+        {
+          "title": "O Capitalismo e a Liberdade",
+          "author": "Milton Friedman",
+          "theme": "Relação entre liberdade econômica e política"
+        },
+        {
+          "title": "A Economia do Bem Comum",
+          "author": "Jean Tirole",
+          "theme": "Economia e responsabilidade social"
+        },
+        {
+          "title": "O Dilema da Inovação",
+          "author": "Clayton M. Christensen",
+          "theme": "Desafios da inovação em empresas estabelecidas"
+        },
+        {
+          "title": "A Nova Economia",
+          "author": "Paul Romer",
+          "theme": "Teoria do crescimento econômico e inovação"
+        },
+        {
+          "title": "Misbehaving: The Making of Behavioral Economics",
+          "author": "Richard H. Thaler",
+          "theme": "Economia comportamental e suas implicações"
+        },
+        {
+          "title": "O Que É Economia",
+          "author": "José Carlos de Almeida",
+          "theme": "Introdução aos conceitos econômicos básicos"
+        },
+        {
+          "title": "Economia Comportamental",
+          "author": "Dan Ariely",
+          "theme": "Impacto do comportamento humano nas decisões econômicas"
+        },
+        {
+          "title": "A Economia da Inovação",
+          "author": "Diana Hicks e Ben Martin",
+          "theme": "Relação entre inovação e crescimento econômico"
+        },
+        {
+          "title": "O Que É Capitalismo",
+          "author": "Marcos Nobre",
+          "theme": "Análise crítica do capitalismo contemporâneo"
+        },
+        {
+          "title": "A Economia do Compartilhamento",
+          "author": "S. Sundararajan",
+          "theme": "Modelos de negócios baseados na economia colaborativa"
+        },
+        {
+          "title": "O Que É Globalização",
+          "author": "J. M. Santos",
+          "theme": "Impactos econômicos da globalização"
+        }
+      ]
+    },
+    {
+      "area": "Psicologia e Comportamento",
+      "books": [
+        {
+          "title": "O Poder do Hábito",
+          "author": "Charles Duhigg",
+          "theme": "Formação e mudança de hábitos"
+        },
+        {
+          "title": "Influência: A Psicologia da Persuasão",
+          "author": "Robert B. Cialdini",
+          "theme": "Mecanismos de persuasão e influência social"
+        },
+        {
+          "title": "Pensar, Rápido e Devagar",
+          "author": "Daniel Kahneman",
+          "theme": "Processos de pensamento e tomada de decisão"
+        },
+        {
+          "title": "Mindset: A Nova Psicologia do Sucesso",
+          "author": "Carol S. Dweck",
+          "theme": "Mentalidade de crescimento e sucesso"
+        },
+        {
+          "title": "A Coragem de Ser Imperfeito",
+          "author": "Brené Brown",
+          "theme": "Vulnerabilidade e autoestima"
+        },
+        {
+          "title": "O Cérebro Autista",
+          "author": "Temple Grandin",
+          "theme": "Compreensão do autismo e suas implicações"
+        },
+        {
+          "title": "Em Busca de Sentido",
+          "author": "Viktor E. Frankl",
+          "theme": "Psicologia existencial e busca de significado"
+        },
+        {
+          "title": "O Efeito Sombra",
+          "author": "Deepak Chopra e outros",
+          "theme": "Aspectos ocultos da psique humana"
+        },
+        {
+          "title": "A Psicologia do Dinheiro",
+          "author": "Morgan Housel",
+          "theme": "Relação entre comportamento e finanças"
+        },
+        {
+          "title": "O Que É Psicologia",
+          "author": "J. A. F. de Almeida",
+          "theme": "Introdução aos conceitos fundamentais da psicologia"
+        },
+        {
+          "title": "A Mente Organizada",
+          "author": "Daniel J. Levitin",
+          "theme": "Organização mental e produtividade"
+        },
+        {
+          "title": "Rápido e Devagar: Duas Formas de Pensar",
+          "author": "Daniel Kahneman",
+          "theme": "Diferentes modos de pensamento e suas consequências"
+        },
+        {
+          "title": "A Psicologia da Felicidade",
+          "author": "Sonja Lyubomirsky",
+          "theme": "Fatores que contribuem para a felicidade"
+        },
+        {
+          "title": "O Cérebro e a Inteligência Emocional",
+          "author": "Daniel Goleman",
+          "theme": "Relação entre cérebro e emoções"
+        },
+        {
+          "title": "O Que É Comportamento",
+          "author": "F. A. de Almeida",
+          "theme": "Fundamentos do comportamento humano"
+        }
+      ]
+    },
+    {
+      "area": "Filosofia",
+      "books": [
+        {
+          "title": "A República",
+          "author": "Platão",
+          "theme": "Justiça e organização da sociedade"
+        },
+        {
+          "title": "Meditacões",
+          "author": "Marco Aurélio",
+          "theme": "Filosofia estoica e autocontrole"
+        },
+        {
+          "title": "Assim Falou Zaratustra",
+          "author": "Friedrich Nietzsche",
+          "theme": "Crítica à moralidade e à religião"
+        },
+        {
+          "title": "O Ser e o Nada",
+          "author": "Jean-Paul Sartre",
+          "theme": "Existencialismo e liberdade"
+        },
+        {
+          "title": "Crítica da Razão Pura",
+          "author": "Immanuel Kant",
+          "theme": "Limites do conhecimento e da razão"
+        },
+        {
+          "title": "O Príncipe",
+          "author": "Nicolau Maquiavel",
+          "theme": "Poder e ética na política"
+        },
+        {
+          "title": "A Ética a Nicômaco",
+          "author": "Aristóteles",
+          "theme": "Virtude e vida ética"
+        },
+        {
+          "title": "O Mundo de Sofia",
+          "author": "Jostein Gaarder",
+          "theme": "Introdução à história da filosofia"
+        },
+        {
+          "title": "A Sociedade do Cansaço",
+          "author": "Byung-Chul Han",
+          "theme": "Crítica à sociedade contemporânea"
+        },
+        {
+          "title": "A Fenomenologia do Espírito",
+          "author": "Georg Wilhelm Friedrich Hegel",
+          "theme": "Desenvolvimento da consciência e da liberdade"
+        },
+        {
+          "title": "O Existencialismo é um Humanismo",
+          "author": "Jean-Paul Sartre",
+          "theme": "Defesa do existencialismo"
+        },
+        {
+          "title": "A Condição Humana",
+          "author": "Hannah Arendt",
+          "theme": "Natureza da ação humana"
+        },
+        {
+          "title": "A Dialética do Esclarecimento",
+          "author": "Max Horkheimer e Theodor W. Adorno",
+          "theme": "Crítica à razão iluminista"
+        },
+        {
+          "title": "A Ética do Cuidado",
+          "author": "Carol Gilligan",
+          "theme": "Ética e relações interpessoais"
+        },
+        {
+          "title": "O Que É Filosofia",
+          "author": "Marilena Chauí",
+          "theme": "Introdução aos conceitos filosóficos"
+        }
+      ]
+    },
+    {
+      "area": "História",
+      "books": [
+        {
+          "title": "História da Riqueza do Homem",
+          "author": "Leo Huberman",
+          "theme": "Desenvolvimento econômico e social ao longo da história"
+        },
+        {
+          "title": "Guns, Germs, and Steel",
+          "author": "Jared Diamond",
+          "theme": "Fatores que moldaram a civilização moderna"
+        },
+        {
+          "title": "A História da Filosofia Ocidental",
+          "author": "Bertrand Russell",
+          "theme": "Desenvolvimento do pensamento filosófico ocidental"
+        },
+        {
+          "title": "O Povo Brasileiro",
+          "author": "Darcy Ribeiro",
+          "theme": "Formação da identidade nacional brasileira"
+        },
+        {
+          "title": "A Revolução dos Bichos",
+          "author": "George Orwell",
+          "theme": "Crítica social e política através da alegoria"
+        },
+        {
+          "title": "A História do Mundo em 100 Objetos",
+          "author": "Neil MacGregor",
+          "theme": "Objetos que moldaram a história da humanidade"
+        },
+        {
+          "title": "Sapiens: Uma Breve História da Humanidade",
+          "author": "Yuval Noah Harari",
+          "theme": "Evolução da espécie humana e suas implicações"
+        },
+        {
+          "title": "A História da Arte",
+          "author": "E.H. Gombrich",
+          "theme": "Desenvolvimento da arte ao longo da história"
+        },
+        {
+          "title": "O Capital",
+          "author": "Karl Marx",
+          "theme": "Análise crítica do capitalismo"
+        },
+        {
+          "title": "A Era das Revoluções",
+          "author": "Eric Hobsbawm",
+          "theme": "Revoluções sociais e políticas no século XIX"
+        },
+        {
+          "title": "A História da Ciência",
+          "author": "Peter J. Bowler",
+          "theme": "Desenvolvimento do pensamento científico"
+        },
+        {
+          "title": "A História da Música Ocidental",
+          "author": "Donald Jay Grout",
+          "theme": "Evolução da música ao longo da história"
+        },
+        {
+          "title": "A História do Brasil",
+          "author": "Capistrano de Abreu",
+          "theme": "Formação da história brasileira"
+        },
+        {
+          "title": "O Que É História",
+          "author": "J. H. M. de Almeida",
+          "theme": "Introdução aos conceitos históricos"
+        },
+        {
+          "title": "A História da Filosofia Antiga",
+          "author": "G. S. Kirk",
+          "theme": "Desenvolvimento do pensamento filosófico na Antiguidade"
+        }
+      ]
+    },
+    {
+      "area": "Geopolítica",
+      "books": [
+        {
+          "title": "A Geopolítica do Medo",
+          "author": "David Rothkopf",
+          "theme": "Impacto do medo nas relações internacionais"
+        },
+        {
+          "title": "A Nova Ordem Mundial",
+          "author": "Henry Kissinger",
+          "theme": "Mudanças na geopolítica contemporânea"
+        },
+        {
+          "title": "O Grande Jogo",
+          "author": "Peter Hopkirk",
+          "theme": "Conflitos geopolíticos na Ásia Central"
+        },
+        {
+          "title": "Geopolítica: Uma Introdução",
+          "author": "André G. de Almeida",
+          "theme": "Fundamentos da geopolítica moderna"
+        },
+        {
+          "title": "A Geopolítica da Energia",
+          "author": "Daniel Yergin",
+          "theme": "Relação entre energia e poder geopolítico"
+        },
+        {
+          "title": "A Guerra Fria: Uma História",
+          "author": "Odd Arne Westad",
+          "theme": "Conflitos geopolíticos durante a Guerra Fria"
+        },
+        {
+          "title": "O Fim da História e o Último Homem",
+          "author": "Francis Fukuyama",
+          "theme": "Teoria sobre o fim das ideologias e a geopolítica"
+        },
+        {
+          "title": "A Geopolítica do Ocidente",
+          "author": "Robert Kagan",
+          "theme": "Análise da política externa ocidental"
+        },
+        {
+          "title": "A Batalha pelo Futuro",
+          "author": "Zbigniew Brzezinski",
+          "theme": "Desafios geopolíticos do século XXI"
+        },
+        {
+          "title": "A Geopolítica da China",
+          "author": "David Shambaugh",
+          "theme": "Ascensão da China e suas implicações geopolíticas"
+        },
+        {
+          "title": "O Mundo em 2025",
+          "author": "John Naisbitt",
+          "theme": "Tendências futuras na geopolítica global"
+        },
+        {
+          "title": "A Geopolítica da Informação",
+          "author": "Ian Bremmer",
+          "theme": "Impacto da informação nas relações internacionais"
+        },
+        {
+          "title": "A Geopolítica do Terrorismo",
+          "author": "Jessica Stern",
+          "theme": "Relação entre terrorismo e geopolítica"
+        },
+        {
+          "title": "A Geopolítica da Ásia",
+          "author": "David C. Kang",
+          "theme": "Dinâmicas geopolíticas na região asiática"
+        },
+        {
+          "title": "Geopolítica e Geoestratégia",
+          "author": "G. John Ikenberry",
+          "theme": "Relação entre geopolítica e estratégia militar"
+        }
+      ]
+    },
+    {
+      "area": "Ciência e Tecnologia",
+      "books": [
+        {
+          "title": "Uma Breve História do Tempo",
+          "author": "Stephen Hawking",
+          "theme": "Conceitos fundamentais da física moderna"
+        },
+        {
+          "title": "O Gene: Uma História Íntima",
+          "author": "Siddhartha Mukherjee",
+          "theme": "História da genética e suas implicações"
+        },
+        {
+          "title": "A Estrutura das Revoluções Científicas",
+          "author": "Thomas S. Kuhn",
+          "theme": "Mudanças de paradigma na ciência"
+        },
+        {
+          "title": "O Andar do Bêbado",
+          "author": "Leonard Mlodinow",
+          "theme": "Aleatoriedade e suas implicações na vida"
+        },
+        {
+          "title": "A Vida Secreta das Árvores",
+          "author": "Peter Wohlleben",
+          "theme": "Ecologia e interconexões na natureza"
+        },
+        {
+          "title": "O Cérebro: Uma Biografia",
+          "author": "David Eagleman",
+          "theme": "Neurociência e funcionamento do cérebro"
+        },
+        {
+          "title": "A Revolução dos Bichos",
+          "author": "George Orwell",
+          "theme": "Crítica social através da alegoria"
+        },
+        {
+          "title": "A Física do Futuro",
+          "author": "Michio Kaku",
+          "theme": "Tendências futuras em ciência e tecnologia"
+        },
+        {
+          "title": "O Que É Ciência",
+          "author": "Marcos Nobre",
+          "theme": "Introdução aos conceitos científicos"
+        },
+        {
+          "title": "Sapiens: Uma Breve História da Humanidade",
+          "author": "Yuval Noah Harari",
+          "theme": "Evolução da espécie humana e suas implicações"
+        },
+        {
+          "title": "A Ciência do Bem-Estar",
+          "author": "Martin Seligman",
+          "theme": "Psicologia positiva e bem-estar"
+        },
+        {
+          "title": "O Que É Tecnologia",
+          "author": "J. M. Santos",
+          "theme": "Introdução aos conceitos tecnológicos"
+        },
+        {
+          "title": "O Futuro da Humanidade",
+          "author": "Michio Kaku",
+          "theme": "Perspectivas futuras da humanidade"
+        },
+        {
+          "title": "A Nova Revolução Industrial",
+          "author": "Jeremy Rifkin",
+          "theme": "Impactos da tecnologia na economia"
+        },
+        {
+          "title": "A Era da Informação",
+          "author": "Manuel Castells",
+          "theme": "Impacto da tecnologia na sociedade"
+        }
+      ]
+    },
+    {
+      "area": "Sociologia",
+      "books": [
+        {
+          "title": "A Ética Protestante e o Espírito do Capitalismo",
+          "author": "Max Weber",
+          "theme": "Relação entre religião e desenvolvimento econômico"
+        },
+        {
+          "title": "Sociedade de Consumo",
+          "author": "Jean Baudrillard",
+          "theme": "Crítica ao consumismo na sociedade contemporânea"
+        },
+        {
+          "title": "A Sociedade em Rede",
+          "author": "Manuel Castells",
+          "theme": "Impacto das redes sociais na sociedade"
+        },
+        {
+          "title": "O Estrangeiro",
+          "author": "Albert Camus",
+          "theme": "Alienação e identidade social"
+        },
+        {
+          "title": "A Invenção da Tradição",
+          "author": "Eric Hobsbawm e Terence Ranger",
+          "theme": "Construção social da tradição"
+        },
+        {
+          "title": "A Sociedade do Cansaço",
+          "author": "Byung-Chul Han",
+          "theme": "Crítica à sociedade contemporânea"
+        },
+        {
+          "title": "A Construção Social da Realidade",
+          "author": "Peter L. Berger e Thomas Luckmann",
+          "theme": "Como a realidade social é construída"
+        },
+        {
+          "title": "O Que É Sociologia",
+          "author": "J. H. M. de Almeida",
+          "theme": "Introdução aos conceitos sociológicos"
+        },
+        {
+          "title": "A Nova Sociologia",
+          "author": "Zygmunt Bauman",
+          "theme": "Mudanças na sociologia contemporânea"
+        },
+        {
+          "title": "A Sociedade do Espetáculo",
+          "author": "Guy Debord",
+          "theme": "Crítica à sociedade da imagem"
+        },
+        {
+          "title": "A Sociologia do Conhecimento",
+          "author": "Karl Mannheim",
+          "theme": "Relação entre conhecimento e sociedade"
+        },
+        {
+          "title": "O Capital Social",
+          "author": "Robert D. Putnam",
+          "theme": "Importância do capital social nas comunidades"
+        },
+        {
+          "title": "A Sociologia da Cultura",
+          "author": "Pierre Bourdieu",
+          "theme": "Relação entre cultura e sociedade"
+        },
+        {
+          "title": "A Sociedade da Informação",
+          "author": "Manuel Castells",
+          "theme": "Impactos da informação na sociedade"
+        },
+        {
+          "title": "O Que É Modernidade",
+          "author": "José Carlos de Almeida",
+          "theme": "Conceitos de modernidade na sociologia"
+        }
+      ]
+    },
+    {
+      "area": "Ficção Clássica e Contemporânea",
+      "books": [
+        {
+          "title": "1984",
+          "author": "George Orwell",
+          "theme": "Distopia e crítica ao totalitarismo"
+        },
+        {
+          "title": "Dom Quixote",
+          "author": "Miguel de Cervantes",
+          "theme": "Aventuras e crítica social"
+        },
+        {
+          "title": "Cem Anos de Solidão",
+          "author": "Gabriel García Márquez",
+          "theme": "Realismo mágico e história da América Latina"
+        },
+        {
+          "title": "Orgulho e Preconceito",
+          "author": "Jane Austen",
+          "theme": "Crítica social e questões de gênero"
+        },
+        {
+          "title": "O Grande Gatsby",
+          "author": "F. Scott Fitzgerald",
+          "theme": "Sonho americano e decadência social"
+        },
+        {
+          "title": "Crime e Castigo",
+          "author": "Fiódor Dostoiévski",
+          "theme": "Moralidade e psicologia do crime"
+        },
+        {
+          "title": "A Metamorfose",
+          "author": "Franz Kafka",
+          "theme": "Alienação e identidade"
+        },
+        {
+          "title": "O Sol é Para Todos",
+          "author": "Harper Lee",
+          "theme": "Injustiça racial e moralidade"
+        },
+        {
+          "title": "A Estrutura das Revoluções Científicas",
+          "author": "Thomas S. Kuhn",
+          "theme": "Mudanças de paradigma na ciência"
+        },
+        {
+          "title": "O Morro dos Ventos Uivantes",
+          "author": "Emily Brontë",
+          "theme": "Amor e vingança"
+        },
+        {
+          "title": "A Insustentável Leveza do Ser",
+          "author": "Milan Kundera",
+          "theme": "Amor e filosofia existencial"
+        },
+        {
+          "title": "O Processo",
+          "author": "Franz Kafka",
+          "theme": "Burocracia e alienação"
+        },
+        {
+          "title": "A Casa dos Espíritos",
+          "author": "Isabel Allende",
+          "theme": "Realismo mágico e história familiar"
+        },
+        {
+          "title": "O Apanhador no Campo de Centeio",
+          "author": "J.D. Salinger",
+          "theme": "Alienação e adolescência"
+        },
+        {
+          "title": "A Montanha Mágica",
+          "author": "Thomas Mann",
+          "theme": "Reflexões sobre a vida e a morte"
+        }
+      ]
+    }
+  ]
+}

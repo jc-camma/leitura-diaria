@@ -37,7 +37,7 @@ SMTP_PASS=sua_senha_ou_app_password
 EMAIL_FROM=seu_email@dominio.com
 EMAIL_TO=destinatario@dominio.com
 OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4.1-mini
+OPENAI_MODEL=gpt-4.1
 YOUTUBE_API_KEY=
 READ_CONFIRM_BASE_URL=
 ```
@@ -147,30 +147,10 @@ python -m app.run --serve-feedback --host 0.0.0.0 --port 8000
 - Se quiser continuar no mesmo dia, o e-mail e o PDF tambem podem incluir um link `/send-next-reading?token=...`, que confirma a leitura atual e envia a proxima imediatamente.
 - Depois disso, o proximo `--send-now` volta a ficar liberado quando a leitura pendente mais recente for confirmada.
 
-## 10) Regenerar catalogo balanceado
+## 10) Reavaliar catalogo anual
 
-Gerar novamente o `books_365.json` com a curadoria balanceada de ficcao, filosofia, psicologia, economia, geopolitica e outras categorias:
-
-```bash
-python -m app.content_tools --rebalance-catalog
-```
-
-Se quiser inspecionar se ainda existe algum placeholder residual:
+Para forcar a reavaliacao anual da lista de livros relevantes por area:
 
 ```bash
-python -m app.content_tools --list-placeholders
-```
-
-## 11) Ajustar um dia especifico manualmente
-
-Exportar template de um dia:
-
-```bash
-python -m app.content_tools --export-template 21 > dia21.json
-```
-
-Editar `dia21.json` e aplicar:
-
-```bash
-python -m app.content_tools --apply-file dia21.json
+python -m app.run --preview --catalog-year 2026 --rebuild-catalog
 ```

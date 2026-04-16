@@ -9,7 +9,7 @@ from html import unescape
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
-from app.lesson import Lesson
+from app.models import Lesson
 
 logger = logging.getLogger(__name__)
 

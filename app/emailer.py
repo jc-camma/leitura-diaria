@@ -7,7 +7,7 @@ from email.message import EmailMessage
 from pathlib import Path
 
 from app.config import SmtpConfig
-from app.lesson import Lesson
+from app.models import Lesson
 
 
 class EmailSendError(RuntimeError):

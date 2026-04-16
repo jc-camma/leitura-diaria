@@ -10,27 +10,21 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
-from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer
-
-from app.lesson import Lesson
-
-
-def slugify_title(title: str, limit: int = 42) -> str:
-    normalized = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
-    safe = re.sub(r"[^A-Za-z0-9]+", "_", normalized).strip("_")
-    safe = re.sub(r"_+", "_", safe)
-    if not safe:
-        safe = "Licao"
-    return safe[:limit].rstrip("_")
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 
 def build_pdf_filename(generation_date: date, day: int, title: str) -> str:
-    short_title = slugify_title(title)
+    short_title = _slugify_title(title)
     return f"{generation_date.isoformat()}_Dia{day:03d}_{short_title}.pdf"
 
 
-def generate_lesson_pdf(
-    lesson: Lesson,
+def generate_raw_text_pdf(
+    *,
+    day: int,
+    title: str,
+    author: str,
+    theme: str,
+    raw_text: str,
     out_dir: Path,
     generation_date: date,
     youtube_video_url: str | None = None,
@@ -39,8 +33,7 @@ def generate_lesson_pdf(
     next_reading_url: str | None = None,
 ) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
-    filename = build_pdf_filename(generation_date, lesson.day, lesson.title)
-    output_path = out_dir / filename
+    output_path = out_dir / build_pdf_filename(generation_date, day, title)
 
     styles = getSampleStyleSheet()
     styles.add(
@@ -74,46 +67,23 @@ def generate_lesson_pdf(
         )
     )
 
-    doc = SimpleDocTemplate(
-        str(output_path),
-        pagesize=A4,
-        leftMargin=2.0 * cm,
-        rightMargin=2.0 * cm,
-        topMargin=2.2 * cm,
-        bottomMargin=2.0 * cm,
-        title=f"MBA 15min - Dia {lesson.day}",
-        author=lesson.author,
-    )
-
     story = [
-        Paragraph(f"Dia {lesson.day:03d} - {lesson.title}", styles["Header"]),
-        Paragraph(f"Autor: {lesson.author}", styles["Body"]),
-        Paragraph(f"Tema: {lesson.theme}", styles["Body"]),
+        Paragraph(f"Dia {day:03d} - {title}", styles["Header"]),
+        Paragraph(f"Autor: {author}", styles["Body"]),
+        Paragraph(f"Tema: {theme}", styles["Body"]),
         Spacer(1, 6),
-        Paragraph("Resumo do livro", styles["SubHeader"]),
+        Paragraph("Analise academica", styles["SubHeader"]),
     ]
-
-    for paragraph in [lesson.central_idea, *lesson.guided_reading]:
-        if paragraph.strip():
-            story.append(Paragraph(_strip_markdown_emphasis(paragraph), styles["Body"]))
-
-    story.extend(
-        [
-            Paragraph("Principais conceitos", styles["SubHeader"]),
-            _bullet_list(lesson.concepts, styles["Body"]),
-        ]
-    )
+    for block in _split_blocks(raw_text):
+        story.append(Paragraph(_render_block(block), styles["Body"]))
 
     if youtube_video_url:
         story.extend(
             [
-                Paragraph(
-                    _build_youtube_link_paragraph(youtube_video_url, youtube_video_title),
-                    styles["Body"],
-                ),
+                Paragraph("Video recomendado", styles["SubHeader"]),
+                Paragraph(_build_youtube_link_paragraph(youtube_video_url, youtube_video_title), styles["Body"]),
             ]
         )
-
     if read_confirmation_url:
         story.extend(
             [
@@ -121,7 +91,6 @@ def generate_lesson_pdf(
                 Paragraph(_build_confirmation_link_paragraph(read_confirmation_url), styles["Body"]),
             ]
         )
-
     if next_reading_url:
         story.extend(
             [
@@ -130,6 +99,16 @@ def generate_lesson_pdf(
             ]
         )
 
+    doc = SimpleDocTemplate(
+        str(output_path),
+        pagesize=A4,
+        leftMargin=2.0 * cm,
+        rightMargin=2.0 * cm,
+        topMargin=2.2 * cm,
+        bottomMargin=2.0 * cm,
+        title=f"MBA 15min - Dia {day}",
+        author=author,
+    )
     doc.build(
         story,
         onFirstPage=lambda canvas, _: _draw_footer(canvas, generation_date),
@@ -138,9 +117,26 @@ def generate_lesson_pdf(
     return output_path
 
 
-def _bullet_list(items: list[str], style: ParagraphStyle) -> ListFlowable:
-    flow_items = [ListItem(Paragraph(_strip_markdown_emphasis(item), style), leftIndent=8) for item in items]
-    return ListFlowable(flow_items, bulletType="bullet", leftIndent=14)
+def _slugify_title(title: str, limit: int = 42) -> str:
+    normalized = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
+    safe = re.sub(r"[^A-Za-z0-9]+", "_", normalized).strip("_")
+    safe = re.sub(r"_+", "_", safe)
+    if not safe:
+        safe = "Licao"
+    return safe[:limit].rstrip("_")
+
+
+def _split_blocks(raw_text: str) -> list[str]:
+    text = raw_text.strip()
+    if not text:
+        return ["(Sem conteudo retornado pela IA)"]
+    blocks = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
+    return blocks or [text]
+
+
+def _render_block(text: str) -> str:
+    escaped = escape(text, {'"': "&quot;"}).replace("\n", "<br/>")
+    return escaped.replace("**", "").replace("__", "")
 
 
 def _draw_footer(canvas, generation_date: date) -> None:  # noqa: ANN001
@@ -153,8 +149,8 @@ def _draw_footer(canvas, generation_date: date) -> None:  # noqa: ANN001
 
 def _build_youtube_link_paragraph(url: str, title: str | None) -> str:
     safe_url = escape(url, {'"': "&quot;"})
-    _ = title
-    return f'<link href="{safe_url}" color="blue"><u>Video recomendado no YouTube</u></link>'
+    label = escape(title or "Video recomendado no YouTube")
+    return f'{label}<br/><link href="{safe_url}" color="blue"><u>{safe_url}</u></link>'
 
 
 def _build_confirmation_link_paragraph(url: str) -> str:
@@ -166,6 +162,3 @@ def _build_next_reading_link_paragraph(url: str) -> str:
     safe_url = escape(url, {'"': "&quot;"})
     return f'<link href="{safe_url}" color="blue"><u>Clique aqui para receber a proxima leitura agora</u></link>'
 
-
-def _strip_markdown_emphasis(text: str) -> str:
-    return text.replace("**", "").replace("__", "")

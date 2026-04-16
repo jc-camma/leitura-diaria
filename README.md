@@ -1,6 +1,6 @@
 # MBA 15min - leitura diaria com PDF e e-mail
 
-Projeto em Python 3.11+ para gerar uma leitura diaria (Dia 1..365), refinar editorialmente o texto em duas passagens (local + OpenAI), validar qualidade, exportar PDF e enviar por SMTP.
+Projeto em Python 3.11+ para gerar uma leitura diaria (Dia 1..365) com analise academica via OpenAI, salvar texto bruto e exportar PDF com links de confirmacao/proxima leitura.
 
 ## Setup rapido (venv)
 
@@ -35,7 +35,7 @@ EMAIL_FROM=seu_email@dominio.com
 EMAIL_TO=destinatario@dominio.com
 
 OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4.1-mini
+OPENAI_MODEL=gpt-4.1
 
 YOUTUBE_API_KEY=
 
@@ -48,34 +48,27 @@ READ_CONFIRM_BASE_URL=
 
 Ordem do pipeline:
 
-1. `reading_plan.py` seleciona o livro do dia
-2. `generator.py` gera rascunho
-3. `refiner.py` aplica refino local anti-repeticao
-4. `openai_refiner.py` aplica refino editorial OpenAI
-5. `quality.py` valida heuristicas de qualidade
-6. `formatter.py` preserva estrutura/secoes
-7. `pdf_exporter.py` gera PDF
-8. `mailer.py` envia e-mail
+1. Gera/reusa catalogo anual de livros relevantes por area
+2. Carrega livro do dia
+3. Faz 1 chamada OpenAI com analise academica
+4. Salva texto bruto em `.md` e `.txt` (sem parser de resumo)
+5. Gera PDF direto desse texto (com links de video/confirmacao/proxima leitura)
+6. Envia e-mail por SMTP (quando `--send-now`)
 
 ## Estrutura principal
 
 ```text
 app/
+  analysis.py
+  catalog.py
   main.py
+  models.py
+  pdf_raw.py
+  read_feedback.py
   run.py
-  reading_plan.py
-  generator.py
-  lesson.py
-  refiner.py
-  openai_refiner.py
-  quality.py
-  formatter.py
-  pdf_exporter.py
   mailer.py
   config.py
-  utils.py
   youtube.py
-  pdf_gen.py
   emailer.py
   state.py
 data/
@@ -98,6 +91,13 @@ python -m app.run --mark-last-read
 python -m app.run --serve-feedback --host 0.0.0.0 --port 8000
 ```
 
+Comandos adicionais:
+
+```bash
+python -m app.run --preview --day 18 --catalog-year 2026
+python -m app.run --preview --catalog-year 2026 --rebuild-catalog
+```
+
 `--day N` gera/envia um dia especifico sem alterar o progresso salvo no `state.json`.
 
 Se houver uma leitura pendente ainda nao confirmada como lida, o proximo `--send-now` fica bloqueado ate a confirmacao. Essa confirmacao pode acontecer de duas formas:
@@ -109,12 +109,6 @@ Se houver uma leitura pendente ainda nao confirmada como lida, o proximo `--send
 
 ```bash
 pytest
-```
-
-Smoke test da camada editorial (before/after):
-
-```bash
-python -c "from app.lesson import load_books,get_entry_for_day; from app.config import runtime_paths; from app.main import refinement_smoke_test; p=runtime_paths(); entry=get_entry_for_day(load_books(p.data_file),1); refinement_smoke_test(entry, p.openai_api_key, p.openai_model)"
 ```
 
 Setup detalhado: [docs/SETUP.md](docs/SETUP.md)

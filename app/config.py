@@ -30,7 +30,7 @@ class RuntimePaths:
     state_file: Path = STATE_FILE
     out_dir: Path = OUT_DIR
     openai_api_key: str | None = None
-    openai_model: str = "gpt-4.1-mini"
+    openai_model: str = "gpt-4.1"
     youtube_api_key: str | None = None
     read_confirm_base_url: str | None = None
 
@@ -54,7 +54,7 @@ def runtime_paths() -> RuntimePaths:
     load_dotenv()
     return RuntimePaths(
         openai_api_key=os.getenv("OPENAI_API_KEY"),
-        openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+        openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1"),
         youtube_api_key=os.getenv("YOUTUBE_API_KEY"),
         read_confirm_base_url=os.getenv("READ_CONFIRM_BASE_URL", "").strip() or None,
     )

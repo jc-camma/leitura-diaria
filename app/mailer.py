@@ -5,7 +5,7 @@ from pathlib import Path
 
 from app.config import SmtpConfig
 from app.emailer import EmailSendError, send_lesson_email
-from app.lesson import Lesson
+from app.models import Lesson
 
 
 def deliver_lesson_email(
