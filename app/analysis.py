@@ -2,31 +2,61 @@ from __future__ import annotations
 
 from app.models import BookEntry
 
-_SYSTEM_MESSAGE = "You are an academic analyst writing in Brazilian Portuguese."
+_SYSTEM_MESSAGE = "You are an academic analyst and study guide writer in Brazilian Portuguese."
 
 _ACADEMIC_ANALYSIS_PROMPT = """
-Escreva uma analise academica aprofundada do livro informado.
+Escreva um guia de leitura completo, profundo e didático do livro informado.
 
-Diretrizes:
-- objetivo: maximizar profundidade, clareza e completude
-- linguagem: profissional, objetiva e didatica
-- explique o que, como e por que
-- conecte conceitos, evidencias, exemplos e implicacoes
-- inclua contrapontos e limitacoes
-- nao use parser-friendly formatting forcado
-- nao escreva em formato de lista mecanica
-- nao mencione que voce e uma IA
+Objetivo:
+- permitir que o leitor compreenda não apenas o conteúdo, mas a lógica interna da obra, suas implicações e seu valor intelectual
 
-Estrutura recomendada (pode adaptar fluentemente):
-1) Tese central e problema tratado
-2) Arquitetura do argumento ao longo da obra
-3) Conceitos estruturantes e relacoes entre eles
-4) Evidencias, exemplos e casos relevantes
-5) Implicacoes praticas (trabalho, decisao, vida intelectual)
-6) Limites, criticas e condicoes de validade
-7) Sintese interpretativa final
+Tom e estilo:
+- português do Brasil, em linguagem fluida, elegante e acessível
+- didático, com rigor conceitual
+- analítico sem ser pedante
+- claro sem simplificar em excesso
+- evite superficialidade, repetições, clichês e generalidades vagas
 
-Entregue o texto final completo em portugues do Brasil.
+Estrutura obrigatória:
+
+1) Abertura editorial
+- título do livro em português
+- linha com autor e foco da leitura
+- introdução curta: por que este livro importa hoje
+
+2) Resumo do livro
+- tese central
+- problema principal enfrentado pela obra
+- como o argumento se desenvolve ao longo do livro
+- quais são os principais momentos de virada, aprofundamento ou inflexão
+
+3) Principais ideias para aprender de verdade
+- apresente os conceitos em sequência lógica
+- explique cada ideia com clareza e profundidade
+- mostre como as ideias se conectam entre si
+- inclua exemplos concretos ou aplicações quando possível
+- destaque os mecanismos centrais do argumento: como e por que cada ideia funciona
+
+4) Análise crítica e implicações
+- quais são as forças do argumento
+- possíveis limitações, tensões ou críticas
+- quais ideias são mais contraintuitivas
+- quais pontos costumam ser mal interpretados
+- quando os conceitos funcionam bem, quando falham e por quê
+- comparação implícita entre ideias do próprio livro ou com outras abordagens relevantes
+- impacto da obra no pensamento contemporâneo
+
+5) Conclusão
+- síntese final dos aprendizados essenciais
+- o que o leitor realmente deve levar consigo após a leitura
+
+Instruções adicionais:
+- evite apenas explicar; interprete
+- não resuma de forma mecânica capítulo por capítulo, a menos que isso seja indispensável para a clareza
+- priorize relações entre causas, mecanismos, limites e consequências
+- adote uma voz analítica, com momentos de posicionamento intelectual claro, sem perder o tom didático
+
+Entregue o texto final completo em português do Brasil.
 """.strip()
 
 
@@ -77,4 +107,3 @@ def _build_user_message(entry: BookEntry) -> str:
         f"Pergunta de reflexao base: {entry.reflection_question}\n"
         f"Citacao base: {quote}\n"
     )
-
