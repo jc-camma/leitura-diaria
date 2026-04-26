@@ -29,6 +29,21 @@ def build_send_next_reading_url(base_url: str, token: str) -> str:
     return f"{base}{SEND_NEXT_READING_PATH}?{urlencode({'token': token})}"
 
 
+def _normalize_route_prefix(base_url: str | None) -> str:
+    if not base_url:
+        return ""
+    raw_path = (urlsplit(base_url).path or "").strip()
+    if not raw_path or raw_path == "/":
+        return ""
+    return "/" + raw_path.strip("/")
+
+
+def _route_with_prefix(prefix: str, path: str) -> str:
+    if not prefix:
+        return path
+    return f"{prefix}{path}"
+
+
 def confirm_read_from_token(state_file: Path, token: str) -> tuple[str, PendingReadConfirmation | None]:
     store = StateStore(state_file)
     state = store.load()
@@ -123,16 +138,21 @@ def _deliver_next_reading(state_file: Path, state, day_to_send: int) -> PendingR
 
 
 def serve_read_feedback(state_file: Path, host: str, port: int) -> None:
-    handler = _build_handler(state_file)
+    load_env_only()
+    paths = runtime_paths()
+    route_prefix = _normalize_route_prefix(paths.read_confirm_base_url)
+    handler = _build_handler(state_file, route_prefix)
+    confirm_read_path = _route_with_prefix(route_prefix, CONFIRM_READ_PATH)
+    send_next_path = _route_with_prefix(route_prefix, SEND_NEXT_READING_PATH)
     server = ThreadingHTTPServer((host, port), handler)
     logger.info(
         "Servidor de feedback em http://%s:%s%s e http://%s:%s%s",
         host,
         port,
-        CONFIRM_READ_PATH,
+        confirm_read_path,
         host,
         port,
-        SEND_NEXT_READING_PATH,
+        send_next_path,
     )
     try:
         server.serve_forever()
@@ -142,23 +162,28 @@ def serve_read_feedback(state_file: Path, host: str, port: int) -> None:
         server.server_close()
 
 
-def _build_handler(state_file: Path) -> type[BaseHTTPRequestHandler]:
+def _build_handler(state_file: Path, route_prefix: str = "") -> type[BaseHTTPRequestHandler]:
+    home_path = route_prefix or "/"
+    confirm_read_path = _route_with_prefix(route_prefix, CONFIRM_READ_PATH)
+    send_next_path = _route_with_prefix(route_prefix, SEND_NEXT_READING_PATH)
+    valid_paths = {confirm_read_path, send_next_path}
+
     class ReadFeedbackHandler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802
             parsed = urlsplit(self.path)
-            if parsed.path == "/":
+            if parsed.path in {"/", home_path}:
                 self._send_html(
                     HTTPStatus.OK,
                     "Feedback de leitura ativo.",
                     "Use os links recebidos no email para confirmar a leitura ou pedir a proxima.",
                 )
                 return
-            if parsed.path not in {CONFIRM_READ_PATH, SEND_NEXT_READING_PATH}:
+            if parsed.path not in valid_paths:
                 self._send_html(HTTPStatus.NOT_FOUND, "Pagina nao encontrada.", "Verifique o link e tente novamente.")
                 return
 
             token = parse_qs(parsed.query).get("token", [""])[0].strip()
-            if parsed.path == SEND_NEXT_READING_PATH:
+            if parsed.path == send_next_path:
                 status, pending = send_next_reading_from_token(state_file, token)
                 if status == "sent":
                     self._send_html(HTTPStatus.OK, "Proxima leitura enviada.", f"Nova leitura enviada: {_label(pending)}.")
@@ -212,4 +237,3 @@ def _label(pending: PendingReadConfirmation | None) -> str:
     if pending.title:
         return f"leitura do Dia {pending.day}: {pending.title}"
     return f"leitura do Dia {pending.day}"
-
